@@ -20,7 +20,7 @@ const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
 const privacy = require('./middleware/privacy');
@@ -40,17 +40,21 @@ const secretsRouter = require('./routes/secrets');
 
 const app = express();
 
+// --- Middleware setup ---
 app.use(helmet());
-app.use(cors({ origin: true, credentials: false }));
+app.use(cors());
 app.use(express.json({ limit: '100kb' }));
 app.use(privacy);
 
+// --- Static files ---
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- Helper function for consistent error responses ---
 function sendError(res, statusCode, message) {
   return res.status(statusCode).json({ message });
 }
 
+// --- Register endpoint ---
 app.post('/api/register', async (req, res) => {
   const { nickname, password, gender } = req.body || {};
 
@@ -60,19 +64,19 @@ app.post('/api/register', async (req, res) => {
 
   try {
     nicknameClean = cleanInput(nickname);
-  } catch (err) {
+  } catch {
     return sendError(res, 400, 'Invalid nickname.');
   }
 
   try {
     passwordClean = cleanInput(password);
-  } catch (err) {
+  } catch {
     return sendError(res, 400, 'Invalid password.');
   }
 
   try {
     genderClean = cleanInput(gender);
-  } catch (err) {
+  } catch {
     return sendError(res, 400, 'Invalid gender.');
   }
 
@@ -123,6 +127,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// --- Login endpoint ---
 app.post('/api/login', async (req, res) => {
   const { nickname, password } = req.body || {};
 
@@ -130,13 +135,13 @@ app.post('/api/login', async (req, res) => {
   let passwordClean;
   try {
     nicknameClean = cleanInput(nickname);
-  } catch (err) {
+  } catch {
     return sendError(res, 400, 'Invalid nickname.');
   }
 
   try {
     passwordClean = cleanInput(password);
-  } catch (err) {
+  } catch {
     return sendError(res, 400, 'Invalid password.');
   }
 
@@ -173,6 +178,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// --- Authenticated route ---
 app.get('/api/me', requireAuth, (req, res) => {
   return res.json({
     id: req.user.id,
@@ -181,8 +187,10 @@ app.get('/api/me', requireAuth, (req, res) => {
   });
 });
 
+// --- Secrets router ---
 app.use('/api', secretsRouter);
 
+// --- Fallback route for SPA ---
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return sendError(res, 404, 'Not found.');
@@ -190,11 +198,13 @@ app.use((req, res) => {
   return res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// --- Global error handler ---
 app.use((err, req, res, next) => {
   return sendError(res, err.statusCode || 500, err.message || 'Internal server error.');
 });
 
+// --- Start server ---
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
-  console.log('Server running on http://localhost:5000');
+  console.log(`Server running on port ${port}`);
 });
