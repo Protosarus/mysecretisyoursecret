@@ -105,8 +105,8 @@ function renderNav() {
         <span>${escapeHTML(user.nickname)}</span>
         <span>${genderIcon(user.gender)}</span>
       </span>
-      <button type="button" class="link-button" data-logout>
-        Log out
+      <button type="button" class="nav-btn" data-logout>
+        Çıkış
       </button>
     `;
     const logoutBtn = navRight.querySelector('[data-logout]');
@@ -118,8 +118,8 @@ function renderNav() {
     }
   } else {
     navRight.innerHTML = `
-      <a class="nav-link" href="/login.html">Login</a>
-      <a class="nav-link" href="/register.html">Register</a>
+      <a class="nav-btn" href="/login.html">Giriş</a>
+      <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
     `;
   }
 }
@@ -149,7 +149,7 @@ function initIndexPage() {
 
   if (user) {
     if (welcome) {
-      welcome.innerHTML = `Welcome back, ${escapeHTML(user.nickname)} ${genderIcon(user.gender)}`;
+      welcome.innerHTML = `Hoş geldin, ${escapeHTML(user.nickname)} ${genderIcon(user.gender)}`;
     }
     if (loggedInSection) {
       loggedInSection.classList.remove('hidden');
@@ -160,7 +160,7 @@ function initIndexPage() {
     if (randomBtn && randomOutput && randomContainer) {
       randomBtn.addEventListener('click', async () => {
         randomBtn.disabled = true;
-        randomBtn.textContent = 'Loading...';
+        randomBtn.textContent = 'Yükleniyor...';
         randomOutput.textContent = '';
         randomContainer.classList.add('hidden');
         try {
@@ -176,10 +176,10 @@ function initIndexPage() {
           `;
           randomContainer.classList.remove('hidden');
         } catch (err) {
-          randomOutput.innerHTML = `<p class="muted-text">No secrets yet.</p>`;
+          randomOutput.innerHTML = `<p class="muted-text">Henüz sır yok.</p>`;
         } finally {
           randomBtn.disabled = false;
-          randomBtn.textContent = 'Show Random Secret';
+          randomBtn.textContent = 'Rastgele Sır Göster';
         }
       });
     }
@@ -200,6 +200,7 @@ function initRegisterPage() {
   }
   const form = document.querySelector('form');
   const errorEl = document.querySelector('[data-form-error]');
+  const successEl = document.querySelector('[data-form-success]');
 
   if (!form) {
     return;
@@ -210,6 +211,9 @@ function initRegisterPage() {
     if (errorEl) {
       errorEl.textContent = '';
     }
+    if (successEl) {
+      successEl.textContent = '';
+    }
 
     const nickname = form.nickname.value.trim();
     const password = form.password.value.trim();
@@ -217,14 +221,14 @@ function initRegisterPage() {
 
     if (nickname.length < 2 || nickname.length > 32) {
       if (errorEl) {
-        errorEl.textContent = 'Nickname must be between 2 and 32 characters.';
+        errorEl.textContent = 'Takma ad 2-32 karakter arasında olmalı.';
       }
       return;
     }
 
     if (password.length < 6) {
       if (errorEl) {
-        errorEl.textContent = 'Password must be at least 6 characters.';
+        errorEl.textContent = 'Şifre en az 6 karakter olmalı.';
       }
       return;
     }
@@ -234,11 +238,15 @@ function initRegisterPage() {
         method: 'POST',
         body: { nickname, password, gender }
       });
-      setAuth(payload.token, payload.user);
-      window.location.href = '/share.html';
+      if (successEl) {
+        successEl.textContent = 'Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.';
+      }
+      setTimeout(() => {
+        window.location.href = '/login.html';
+      }, 1600);
     } catch (err) {
       if (errorEl) {
-        errorEl.textContent = err.message || 'Registration failed.';
+        errorEl.textContent = err.message || 'Kayıt başarısız.';
       }
     }
   });
@@ -268,7 +276,7 @@ function initLoginPage() {
 
     if (!nickname || !password) {
       if (errorEl) {
-        errorEl.textContent = 'Nickname and password are required.';
+        errorEl.textContent = 'Takma ad ve şifre gerekli.';
       }
       return;
     }
@@ -282,7 +290,7 @@ function initLoginPage() {
       window.location.href = '/read.html';
     } catch (err) {
       if (errorEl) {
-        errorEl.textContent = err.message || 'Login failed.';
+        errorEl.textContent = err.message || 'Giriş başarısız.';
       }
     }
   });
@@ -296,7 +304,7 @@ function populateCategoryOptions(selectEl, categories, includeAll = false) {
   selectEl.innerHTML = options
     .map((cat) => {
       if (cat === '__all__') {
-        return '<option value="">All categories</option>';
+        return '<option value="">Tüm kategoriler</option>';
       }
       return `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`;
     })
@@ -315,7 +323,7 @@ function initSharePage() {
     })
     .catch(() => {
       if (statusEl) {
-        statusEl.textContent = 'Failed to load categories.';
+        statusEl.textContent = 'Kategoriler yüklenemedi.';
         statusEl.classList.remove('form-success');
         statusEl.classList.add('form-error');
       }
@@ -337,7 +345,7 @@ function initSharePage() {
 
     if (!category) {
       if (statusEl) {
-        statusEl.textContent = 'Choose a category.';
+        statusEl.textContent = 'Lütfen bir kategori seç.';
         statusEl.classList.add('form-error');
       }
       return;
@@ -345,7 +353,7 @@ function initSharePage() {
 
     if (content.length < 2) {
       if (statusEl) {
-        statusEl.textContent = 'Secret is too short.';
+        statusEl.textContent = 'Sır metni çok kısa.';
         statusEl.classList.add('form-error');
       }
       return;
@@ -358,12 +366,12 @@ function initSharePage() {
       });
       form.reset();
       if (statusEl) {
-        statusEl.textContent = 'Secret shared! Read what others say.';
+        statusEl.textContent = 'Sır başarıyla paylaşıldı!';
         statusEl.classList.add('form-success');
       }
     } catch (err) {
       if (statusEl) {
-        statusEl.textContent = err.message || 'Failed to share.';
+        statusEl.textContent = err.message || 'Paylaşım başarısız.';
         statusEl.classList.add('form-error');
       }
     }
@@ -376,7 +384,7 @@ function renderSecrets(listEl, secrets) {
   }
 
   if (!secrets || secrets.length === 0) {
-    listEl.innerHTML = '<p class="muted-text">No secrets yet. Be the first to share one.</p>';
+    listEl.innerHTML = '<p class="muted-text">Henüz paylaşım yok. İlk fısıltıyı sen bırak.</p>';
     return;
   }
 
@@ -403,14 +411,17 @@ function initReadPage() {
   const randomBtn = document.querySelector('[data-random-btn]');
   const randomArea = document.querySelector('[data-random-area]');
 
-  fetchJSON('/api/categories')
-    .then((categories) => {
-      populateCategoryOptions(filterSelect, categories, true);
-      loadSecrets();
-    })
-    .catch(() => {
-      renderSecrets(listEl, []);
-    });
+  function loadCategories() {
+    return fetchJSON('/api/categories')
+      .then((categories) => {
+        populateCategoryOptions(filterSelect, categories, true);
+      })
+      .catch(() => {
+        renderSecrets(listEl, []);
+      });
+  }
+
+  loadCategories().then(() => loadSecrets());
 
   function loadSecrets() {
     const selected = filterSelect && filterSelect.value ? filterSelect.value : '';
@@ -421,7 +432,7 @@ function initReadPage() {
       })
       .catch((err) => {
         if (listEl) {
-          listEl.innerHTML = `<p class="muted-text">${err.message || 'Failed to fetch secrets.'}</p>`;
+          listEl.innerHTML = `<p class="muted-text">${err.message || 'Sırlar getirilemedi.'}</p>`;
         }
       });
   }
@@ -432,10 +443,17 @@ function initReadPage() {
     });
   }
 
+  const refreshBtn = document.querySelector('[data-refresh]');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      loadSecrets();
+    });
+  }
+
   if (randomBtn && randomArea) {
     randomBtn.addEventListener('click', async () => {
       randomBtn.disabled = true;
-      randomBtn.textContent = 'Loading...';
+      randomBtn.textContent = 'Yükleniyor...';
       randomArea.innerHTML = '';
       try {
         const secret = await fetchJSON('/api/random');
@@ -449,10 +467,10 @@ function initReadPage() {
           </article>
         `;
       } catch (err) {
-        randomArea.innerHTML = `<p class="muted-text">${err.message || 'No secrets yet.'}</p>`;
+        randomArea.innerHTML = `<p class="muted-text">${err.message || 'Henüz sır yok.'}</p>`;
       } finally {
         randomBtn.disabled = false;
-        randomBtn.textContent = 'Show Random Secret';
+        randomBtn.textContent = 'Rastgele Sır Göster';
       }
     });
   }

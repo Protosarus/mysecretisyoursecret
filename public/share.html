@@ -4,44 +4,51 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Share a secret - mysecretisyoursecret.com</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/style.css?v=20241103" />
     <script src="/script.js" defer></script>
   </head>
   <body data-page="share">
     <header class="top-bar">
-      <div class="brand">
-        <a href="/index.html">mysecretisyoursecret.com</a>
+      <a class="brand" href="/index.html">mysecretisyoursecret.com</a>
+      <div class="nav-right" data-nav-auth>
+        <a class="nav-btn" href="/login.html">Giriş</a>
+        <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
       </div>
-      <div class="nav-right" data-nav-auth></div>
     </header>
 
-    <main class="container">
-      <section class="card">
-        <h1>Share a secret</h1>
-        <p class="muted-text">
-          Signed in as <span data-user-name></span> <span data-user-gender-icon></span>. Take a breath, share what you need to say.
+    <main class="share-page">
+      <section class="share-card">
+        <div class="share-headline">
+          <h1>Sırlarını fısılda</h1>
+          <p>
+            <span data-user-name></span>
+            <span data-user-gender-icon></span>
+          </p>
+        </div>
+        <p class="share-subtitle">
+          Kategori seç, içini dök. Kimliğin karanlıkta kalacak.
         </p>
 
         <form>
           <div class="form-group">
-            <label for="category">Category</label>
+            <label for="category">Kategori</label>
             <select id="category" name="category" required></select>
           </div>
 
           <div class="form-group">
-            <label for="content">Your secret</label>
+            <label for="content">Sır metni</label>
             <textarea
               id="content"
               name="content"
               maxlength="2000"
-              placeholder="Type it all out..."
+              placeholder="Karanlıkta kalmış düşüncelerini buraya bırak..."
               required
             ></textarea>
           </div>
 
-          <div data-share-status></div>
+          <div class="form-status" data-share-status></div>
 
-          <button class="btn" type="submit">Share anonymously</button>
+          <button class="btn neon" type="submit">Gönder</button>
         </form>
       </section>
     </main>

@@ -33,27 +33,27 @@ router.post('/secrets', async (req, res) => {
   try {
     categoryClean = cleanInput(category);
   } catch (err) {
-    return res.status(400).json({ message: 'Invalid category.' });
+    return res.status(400).json({ message: 'Geçersiz kategori.' });
   }
 
   try {
     contentClean = cleanInput(content, { allowNewlines: true });
   } catch (err) {
-    return res.status(400).json({ message: 'Invalid content.' });
+    return res.status(400).json({ message: 'Geçersiz içerik.' });
   }
 
   if (!isValidCategory(categoryClean)) {
-    return res.status(400).json({ message: 'Unknown category.' });
+    return res.status(400).json({ message: 'Bilinmeyen kategori.' });
   }
 
   if (!isValidContent(contentClean)) {
-    return res.status(400).json({ message: 'Content must be between 2 and 2000 characters.' });
+    return res.status(400).json({ message: 'Sır metni 2 ile 2000 karakter arasında olmalı.' });
   }
 
   const now = Date.now();
   const lastPost = lastPostMap.get(req.user.id) || 0;
   if (now - lastPost < POST_WINDOW_MS) {
-    return res.status(429).json({ message: 'You are sharing too quickly. Please wait a moment.' });
+    return res.status(429).json({ message: 'Çok hızlı paylaşıyorsun, lütfen biraz bekle.' });
   }
 
   try {
@@ -63,7 +63,7 @@ router.post('/secrets', async (req, res) => {
       content: contentClean
     });
     lastPostMap.set(req.user.id, now);
-    return res.status(201).json({ message: 'Secret shared.' });
+    return res.status(201).json({ message: 'Sır paylaşıldı.' });
   } catch (err) {
     return res.status(500).json({ message: 'Failed to share secret.' });
   }
@@ -77,11 +77,11 @@ router.get('/secrets', async (req, res) => {
     try {
       categoryFilter = cleanInput(categoryParam);
     } catch (err) {
-      return res.status(400).json({ message: 'Invalid category filter.' });
+      return res.status(400).json({ message: 'Geçersiz kategori filtresi.' });
     }
 
     if (!isValidCategory(categoryFilter)) {
-      return res.status(400).json({ message: 'Unknown category.' });
+      return res.status(400).json({ message: 'Bilinmeyen kategori.' });
     }
   }
 
@@ -89,7 +89,7 @@ router.get('/secrets', async (req, res) => {
     const secrets = await listSecrets({ category: categoryFilter });
     return res.json(secrets);
   } catch (err) {
-    return res.status(500).json({ message: 'Failed to fetch secrets.' });
+    return res.status(500).json({ message: 'Sırlar getirilemedi.' });
   }
 });
 
@@ -97,11 +97,11 @@ router.get('/random', async (req, res) => {
   try {
     const secret = await getRandomSecret();
     if (!secret) {
-      return res.status(404).json({ message: 'No secrets yet.' });
+      return res.status(404).json({ message: 'Henüz paylaşım yok.' });
     }
     return res.json(secret);
   } catch (err) {
-    return res.status(500).json({ message: 'Failed to fetch random secret.' });
+    return res.status(500).json({ message: 'Rastgele sır getirilemedi.' });
   }
 });
 

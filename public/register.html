@@ -4,25 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register - mysecretisyoursecret.com</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/style.css?v=20241103" />
     <script src="/script.js" defer></script>
   </head>
   <body data-page="register">
     <header class="top-bar">
-      <div class="brand">
-        <a href="/index.html">mysecretisyoursecret.com</a>
+      <a class="brand" href="/index.html">mysecretisyoursecret.com</a>
+      <div class="nav-right" data-nav-auth>
+        <a class="nav-btn" href="/login.html">Giriş</a>
+        <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
       </div>
-      <div class="nav-right" data-nav-auth></div>
     </header>
 
-    <main class="container">
-      <section class="card">
-        <h1>Create an account</h1>
-        <p class="muted-text">Pick a nickname, choose who you are, and start sharing.</p>
+    <main class="auth-page">
+      <section class="auth-card">
+        <h1>Karanlıkta yeni bir kimlik</h1>
+        <p class="auth-subtitle">
+          Takma adını seç, cinsiyetini belirt ve aramıza katıl. Postaların hepsi anonim.
+        </p>
 
         <form>
           <div class="form-group">
-            <label for="nickname">Nickname</label>
+            <label for="nickname">Takma Ad</label>
             <input
               id="nickname"
               name="nickname"
@@ -35,7 +38,7 @@
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">Şifre</label>
             <input
               id="password"
               name="password"
@@ -48,18 +51,26 @@
           </div>
 
           <div class="form-group">
-            <label for="gender">Gender</label>
+            <label for="gender">Cinsiyet</label>
             <select id="gender" name="gender" required>
-              <option value="male">Male ♂</option>
-              <option value="female">Female ♀</option>
-              <option value="other">Other ⚧</option>
+              <option value="male">Erkek ♂</option>
+              <option value="female">Kadın ♀</option>
+              <option value="other">Diğer ⚧</option>
             </select>
           </div>
 
-          <div class="form-error" data-form-error></div>
+          <div class="form-status">
+            <div class="form-error" data-form-error></div>
+            <div class="form-success" data-form-success></div>
+          </div>
 
-          <button class="btn" type="submit">Register</button>
+          <button class="btn neon" type="submit">Kayıt Ol</button>
         </form>
+
+        <p class="auth-minor">
+          Zaten hesabın var mı?
+          <a class="auth-link" href="/login.html">Giriş yap</a>
+        </p>
       </section>
     </main>
   </body>

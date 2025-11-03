@@ -4,33 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Read secrets - mysecretisyoursecret.com</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/style.css?v=20241103" />
     <script src="/script.js" defer></script>
   </head>
   <body data-page="read">
     <header class="top-bar">
-      <div class="brand">
-        <a href="/index.html">mysecretisyoursecret.com</a>
+      <a class="brand" href="/index.html">mysecretisyoursecret.com</a>
+      <div class="nav-right" data-nav-auth>
+        <a class="nav-btn" href="/login.html">Giriş</a>
+        <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
       </div>
-      <div class="nav-right" data-nav-auth></div>
     </header>
 
-    <main class="container">
-      <section class="card">
-        <h1>Read the whispers</h1>
-        <p class="muted-text">Stories from anonymous strangers, filtered by topic if you need.</p>
-
-        <div class="filter-controls">
-          <label for="category-filter" class="muted-text">Filter by category</label>
-          <select id="category-filter" data-filter></select>
-          <button class="btn btn-secondary" type="button" data-random-btn>Show Random Secret</button>
+    <main class="read-page">
+      <section class="read-hero">
+        <div class="read-header">
+          <h1>Fısıltıları oku</h1>
+          <p class="read-tagline">Anonim kalplerden gelen hikayeler. Dilersen konuya göre filtrele.</p>
         </div>
 
-        <div data-random-area></div>
+        <div class="read-controls">
+          <label for="category-filter" class="sr-only">Kategori seç</label>
+          <select id="category-filter" data-filter class="read-select"></select>
+          <button class="btn outline" type="button" data-refresh>Yenile</button>
+          <button class="btn neon" type="button" data-random-btn>Rastgele Sır Göster</button>
+        </div>
+
+        <div class="random-area" data-random-area></div>
       </section>
 
-      <section class="card">
-        <h2>Latest secrets</h2>
+      <section class="read-list-section">
+        <h2>Son paylaşılan sırlar</h2>
         <div class="secrets-list" data-secrets-list></div>
       </section>
     </main>

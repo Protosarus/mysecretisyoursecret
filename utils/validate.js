@@ -1,4 +1,4 @@
-const CATEGORIES = ['Relationships', 'Work / Career', 'Thoughts', 'Other'];
+const CATEGORIES = ['ilişki', 'aile', 'iş', 'sağlık', 'diğer'];
 
 function isString(value) {
   return typeof value === 'string';

@@ -4,42 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>mysecretisyoursecret.com</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/style.css?v=20241103" />
     <script src="/script.js" defer></script>
   </head>
   <body data-page="index">
     <header class="top-bar">
-      <div class="brand">
-        <a href="/index.html">mysecretisyoursecret.com</a>
+      <a class="brand" href="/index.html">mysecretisyoursecret.com</a>
+      <div class="nav-right" data-nav-auth>
+        <a class="nav-btn" href="/login.html">Giriş</a>
+        <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
       </div>
-      <div class="nav-right" data-nav-auth></div>
     </header>
 
-    <main class="container">
-      <section class="card" data-logged-in>
-        <h1 data-welcome>Welcome back.</h1>
-        <p class="muted-text">
-          Share the thoughts you cannot say out loud. Read what others whisper in the dark.
+    <main class="landing">
+      <section class="hero" data-logged-in>
+        <div class="hero-logo">mysecretisyoursecret</div>
+        <p class="hero-tagline" data-welcome>Hoş geldin.</p>
+        <p class="hero-subtitle">
+          Zihnindeki fısıltıları güvenle paylaş, diğer anonim ruhlarla buluş.
         </p>
-        <div class="hero-actions">
-          <a class="btn" href="/share.html">Share a Secret</a>
-          <a class="btn btn-secondary" href="/read.html">Read Secrets</a>
-          <button class="btn" type="button" data-random-btn>Show Random Secret</button>
-        </div>
-        <div class="card hidden" data-random-container>
-          <h3>Random secret</h3>
-          <div data-random-output></div>
+        <div class="hero-buttons">
+          <a class="btn neon" href="/read.html">Sırları Oku</a>
+          <a class="btn outline" href="/share.html">Sır Paylaş</a>
         </div>
       </section>
 
-      <section class="card hidden" data-logged-out>
-        <h1>Share without fear.</h1>
-        <p class="muted-text">
-          Register with a nickname. No email, no tracking, no IP collection. Just you and your secrets.
+      <section class="hero hidden" data-logged-out>
+        <div class="hero-logo">mysecretisyoursecret</div>
+        <p class="hero-tagline">Anonim sırlarını güvenle paylaş</p>
+        <p class="hero-subtitle">
+          Hiçbir iz bırakmadan, yalnızca bir takma ad ve cesaretinle aramıza katıl.
         </p>
-        <div class="hero-actions">
-          <a class="btn" href="/register.html">Create Account</a>
-          <a class="btn btn-secondary" href="/login.html">Already joined? Log in</a>
+        <div class="hero-buttons">
+          <a class="btn neon" href="/read.html">Sırları Oku</a>
+          <a class="btn outline" href="/share.html">Sır Paylaş</a>
         </div>
       </section>
     </main>
