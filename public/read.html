@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Read secrets - mysecretisyoursecret.com</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/script.js" defer></script>
+  </head>
+  <body data-page="read">
+    <header class="top-bar">
+      <div class="brand">
+        <a href="/index.html">mysecretisyoursecret.com</a>
+      </div>
+      <div class="nav-right" data-nav-auth></div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h1>Read the whispers</h1>
+        <p class="muted-text">Stories from anonymous strangers, filtered by topic if you need.</p>
+
+        <div class="filter-controls">
+          <label for="category-filter" class="muted-text">Filter by category</label>
+          <select id="category-filter" data-filter></select>
+          <button class="btn btn-secondary" type="button" data-random-btn>Show Random Secret</button>
+        </div>
+
+        <div data-random-area></div>
+      </section>
+
+      <section class="card">
+        <h2>Latest secrets</h2>
+        <div class="secrets-list" data-secrets-list></div>
+      </section>
+    </main>
+  </body>
+</html>

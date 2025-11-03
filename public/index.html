@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mysecretisyoursecret.com</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/script.js" defer></script>
+  </head>
+  <body data-page="index">
+    <header class="top-bar">
+      <div class="brand">
+        <a href="/index.html">mysecretisyoursecret.com</a>
+      </div>
+      <div class="nav-right" data-nav-auth></div>
+    </header>
+
+    <main class="container">
+      <section class="card" data-logged-in>
+        <h1 data-welcome>Welcome back.</h1>
+        <p class="muted-text">
+          Share the thoughts you cannot say out loud. Read what others whisper in the dark.
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="/share.html">Share a Secret</a>
+          <a class="btn btn-secondary" href="/read.html">Read Secrets</a>
+          <button class="btn" type="button" data-random-btn>Show Random Secret</button>
+        </div>
+        <div class="card hidden" data-random-container>
+          <h3>Random secret</h3>
+          <div data-random-output></div>
+        </div>
+      </section>
+
+      <section class="card hidden" data-logged-out>
+        <h1>Share without fear.</h1>
+        <p class="muted-text">
+          Register with a nickname. No email, no tracking, no IP collection. Just you and your secrets.
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="/register.html">Create Account</a>
+          <a class="btn btn-secondary" href="/login.html">Already joined? Log in</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Share a secret - mysecretisyoursecret.com</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/script.js" defer></script>
+  </head>
+  <body data-page="share">
+    <header class="top-bar">
+      <div class="brand">
+        <a href="/index.html">mysecretisyoursecret.com</a>
+      </div>
+      <div class="nav-right" data-nav-auth></div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h1>Share a secret</h1>
+        <p class="muted-text">
+          Signed in as <span data-user-name></span> <span data-user-gender-icon></span>. Take a breath, share what you need to say.
+        </p>
+
+        <form>
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="content">Your secret</label>
+            <textarea
+              id="content"
+              name="content"
+              maxlength="2000"
+              placeholder="Type it all out..."
+              required
+            ></textarea>
+          </div>
+
+          <div data-share-status></div>
+
+          <button class="btn" type="submit">Share anonymously</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
