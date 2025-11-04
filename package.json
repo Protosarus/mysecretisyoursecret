@@ -20,6 +20,7 @@
     "express": "^4.19.2",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
+    "npmlog": "^6.0.2",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.1"
   }
