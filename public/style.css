@@ -311,17 +311,19 @@ a {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 1.25rem;
   text-align: center;
-  max-width: 600px;
+  max-width: 520px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1.75rem 1.25rem;
   min-height: auto;
   max-height: 90vh;
   background: linear-gradient(150deg, rgba(15, 5, 41, 0.92), rgba(65, 21, 123, 0.7));
   border: 1px solid rgba(130, 90, 255, 0.45);
   border-radius: calc(var(--radius) + 10px);
   box-shadow: 0 38px 90px rgba(20, 10, 60, 0.6);
+  overflow: hidden;
 }
 
 .hero-logo {
@@ -344,7 +346,7 @@ a {
 
 .hero-logo span:first-child,
 .hero-logo span:last-child {
-  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-size: clamp(1.9rem, 4.6vw, 3.4rem);
   font-weight: 700;
 }
 
@@ -353,25 +355,25 @@ a {
 }
 
 .hero-logo-middle {
-  font-size: clamp(1.2rem, 3vw, 2.2rem);
+  font-size: clamp(1rem, 2.5vw, 1.8rem);
   font-weight: 600;
   letter-spacing: 0.4em;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .hero-tagline {
-  font-size: clamp(1rem, 2vw, 2rem);
+  font-size: clamp(1rem, 2.2vw, 1.6rem);
   font-weight: 600;
   margin: 0;
 }
 
 .hero-subtitle {
-  margin: 1.1rem auto 2.4rem;
+  margin: 0.8rem auto 1.8rem;
   max-width: 520px;
   padding-inline: clamp(0.75rem, 5vw, 2rem);
   color: var(--muted);
   line-height: 1.7;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .hero-buttons {
