@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mysecretisyoursecret
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: change_this_secret_later
+      - key: DATABASE_URL
+        value: paste_your_render_postgresql_url_here
