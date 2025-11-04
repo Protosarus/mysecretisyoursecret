@@ -404,6 +404,8 @@ function renderSecrets(listEl, secrets) {
 }
 
 function initReadPage() {
+  guardLoggedIn();
+
   const filterSelect = document.querySelector('[data-filter]');
   const listEl = document.querySelector('[data-secrets-list]');
   const randomBtn = document.querySelector('[data-random-btn]');
