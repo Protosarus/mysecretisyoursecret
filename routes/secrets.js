@@ -18,13 +18,11 @@ const router = express.Router();
 const POST_WINDOW_MS = 15000;
 const lastPostMap = new Map();
 
-router.use(requireAuth);
-
 router.get('/categories', (req, res) => {
   return res.json(CATEGORIES);
 });
 
-router.post('/secrets', async (req, res) => {
+router.post('/secrets', requireAuth, async (req, res) => {
   const { category, content } = req.body || {};
 
   let categoryClean;
