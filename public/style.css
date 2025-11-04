@@ -310,33 +310,31 @@ a {
 .hero {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: clamp(1.1rem, 2.8vw, 1.8rem);
   text-align: center;
-  max-width: 400px;
-  width: 100%;
+  width: min(100%, 640px);
+  max-width: 640px;
   margin: 0 auto;
-  padding: 0.95rem 0.9rem;
-  min-height: 58vh;
-  max-height: 70vh;
+  padding: clamp(1.75rem, 4vw, 2.6rem) clamp(1.6rem, 5vw, 3rem);
+  min-height: clamp(420px, 70vh, 600px);
   background: linear-gradient(150deg, rgba(15, 5, 41, 0.92), rgba(65, 21, 123, 0.7));
   border: 1px solid rgba(130, 90, 255, 0.45);
-  border-radius: calc(var(--radius) + 10px);
+  border-radius: calc(var(--radius) + 12px);
   box-shadow: 0 38px 90px rgba(20, 10, 60, 0.6);
-  overflow: hidden;
 }
 
 .hero-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25em;
+  gap: 0.3em;
   color: #fff;
   text-shadow: 0 0 18px rgba(200, 150, 255, 0.55);
   text-align: center;
-  max-width: 90%; /* kutu sınırlarını aşmasın */
-  margin: 0 auto;
+  max-width: 90%;
+  margin: 0 auto 0.25rem;
 }
 
 .hero-logo span {
@@ -347,7 +345,7 @@ a {
 
 .hero-logo span:first-child,
 .hero-logo span:last-child {
-  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-size: clamp(1.7rem, 4.5vw, 3.2rem);
   font-weight: 700;
 }
 
@@ -356,37 +354,45 @@ a {
 }
 
 .hero-logo-middle {
-  font-size: clamp(0.7rem, 1.8vw, 1.1rem);
+  font-size: clamp(0.85rem, 2.4vw, 1.5rem);
   font-weight: 600;
   letter-spacing: 0.4em;
   color: rgba(255, 255, 255, 0.9);
 }
 
-.hero-tagline {
-  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+.hero-welcome {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.6vw, 1.3rem);
   font-weight: 600;
-  margin: 0 0 0.3rem;
+  color: rgba(210, 202, 255, 0.95);
+}
+
+.hero-tagline {
+  font-size: clamp(1rem, 1.9vw, 1.5rem);
+  font-weight: 600;
+  margin: 0;
 }
 
 .hero-subtitle {
-  margin: 0 auto 0.3rem;
-  max-width: 520px;
-  padding-inline: clamp(0.75rem, 5vw, 2rem);
+  margin: 0;
+  max-width: 460px;
+  padding-inline: clamp(0.5rem, 5vw, 1.6rem);
   color: var(--muted);
   line-height: 1.7;
-  font-size: 0.82rem;
+  font-size: clamp(0.9rem, 1.6vw, 1.1rem);
 }
 
 .hero-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.7rem;
+  gap: 1rem;
+  margin-top: clamp(1.2rem, 3vw, 2rem);
 }
 
 .hero .btn {
-  padding: 0.6rem 1.4rem;
-  font-size: 0.82rem;
+  padding: 0.78rem 2rem;
+  font-size: 0.95rem;
 }
 
 .card {
@@ -671,7 +677,8 @@ textarea {
   }
 
   .hero {
-    padding: 2.5rem 1.8rem;
+    padding: 2.1rem 1.4rem;
+    min-height: clamp(360px, 68vh, 520px);
   }
 
   .auth-card {
@@ -706,8 +713,8 @@ textarea {
   justify-content: center;
   text-align: center;
   color: #fff;
-  text-shadow: 0 0 30px rgba(185, 131, 255, 0.85), 0 0 60px rgba(120, 90, 255, 0.55);
-  margin-bottom: 1.2rem;
+  text-shadow: 0 0 24px rgba(185, 131, 255, 0.65), 0 0 48px rgba(120, 90, 255, 0.45);
+  margin-bottom: 0.5rem;
   max-width: 90%;
   margin-inline: auto;
   line-height: 1.1;
@@ -720,7 +727,7 @@ textarea {
 }
 
 .hero-logo span:first-child {
-  font-size: clamp(2.6rem, 6.5vw, 5.5rem);
+  font-size: clamp(1.7rem, 4.8vw, 3.2rem);
   font-weight: 800;
   background: linear-gradient(90deg, #b983ff, #8ab4ff);
   -webkit-background-clip: text;
@@ -729,15 +736,15 @@ textarea {
 }
 
 .hero-logo-middle {
-  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  font-size: clamp(0.95rem, 2.6vw, 1.6rem);
   color: #cbb6ff;
-  text-shadow: 0 0 25px rgba(185, 131, 255, 0.8);
-  margin: 0.3rem 0;
+  text-shadow: 0 0 22px rgba(185, 131, 255, 0.75);
+  margin: 0.25rem 0;
   animation: glow-pulse 2.5s ease-in-out infinite;
 }
 
 .hero-logo span:last-child {
-  font-size: clamp(2.6rem, 6.5vw, 5.5rem);
+  font-size: clamp(1.7rem, 4.8vw, 3.2rem);
   font-weight: 800;
   background: linear-gradient(90deg, #8ab4ff, #b983ff);
   -webkit-background-clip: text;
