@@ -338,7 +338,7 @@ a {
 
 .hero-logo span:first-child,
 .hero-logo span:last-child {
-  font-size: clamp(2.7rem, 6.5vw, 5.4rem);
+  font-size: clamp(2.1rem, 5vw, 4.2rem);
   font-weight: 700;
 }
 
@@ -347,7 +347,7 @@ a {
 }
 
 .hero-logo-middle {
-  font-size: clamp(1.6rem, 4.5vw, 3rem);
+  font-size: clamp(1.2rem, 3vw, 2.2rem);
   font-weight: 600;
   letter-spacing: 0.4em;
   color: rgba(255, 255, 255, 0.9);
@@ -517,7 +517,6 @@ a {
 .btn.outline:hover,
 .btn.outline:focus {
   background: rgba(35, 18, 80, 0.85);
-}
 }
 
 .btn-secondary {
@@ -711,6 +710,7 @@ textarea {
   font-weight: 800;
   background: linear-gradient(90deg, #b983ff, #8ab4ff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -727,6 +727,7 @@ textarea {
   font-weight: 800;
   background: linear-gradient(90deg, #8ab4ff, #b983ff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
