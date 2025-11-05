@@ -108,6 +108,15 @@ a {
   transition: all var(--transition);
 }
 
+.nav-btn[data-gothic] {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(168, 85, 247, 0.12);
+  color: #f4e7ff;
+  text-shadow: 0 0 12px rgba(168, 120, 255, 0.35);
+}
+
 .nav-btn.primary {
   background: var(--accent);
   color: #070016;

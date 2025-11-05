@@ -169,7 +169,7 @@ function renderNav() {
   const user = getUser();
   if (user) {
     const adminLink = user.isAdmin
-      ? `<a class="nav-btn" href="/admin.html" data-requires-auth="true" data-redirect="/admin.html">Admin Panel</a>`
+      ? `<a class="nav-btn" href="/admin.html" data-requires-auth="true" data-redirect="/admin.html" data-gothic>Admin Sanctum</a>`
       : '';
     navRight.innerHTML = `
       ${adminLink}
@@ -177,8 +177,8 @@ function renderNav() {
         <span>${escapeHTML(user.nickname)}</span>
         <span>${genderIcon(user.gender)}</span>
       </span>
-      <button type="button" class="nav-btn" data-logout>
-        Çıkış
+      <button type="button" class="nav-btn" data-logout data-gothic>
+        Depart
       </button>
     `;
     const logoutBtn = navRight.querySelector('[data-logout]');
@@ -190,8 +190,8 @@ function renderNav() {
     }
   } else {
     navRight.innerHTML = `
-      <a class="nav-btn" href="/login.html">Giriş</a>
-      <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
+      <a class="nav-btn" href="/login.html" data-gothic>Enter</a>
+      <a class="nav-btn primary" href="/register.html" data-gothic>Join Us</a>
     `;
   }
 
