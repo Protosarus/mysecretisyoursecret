@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Read secrets - mysecretisyoursecret.com</title>
     <link rel="stylesheet" href="/style.css?v=20241103" />
+    <script>
+      (function enforceAuthEarly() {
+        try {
+          var token = localStorage.getItem('auth_token');
+          if (!token) {
+            window.location.replace('/login.html?next=%2Fread.html');
+          }
+        } catch (err) {
+          // If storage access fails, fall back to the regular guard later.
+        }
+      })();
+    </script>
     <script src="/script.js" defer></script>
   </head>
   <body data-page="read">

@@ -27,6 +27,38 @@ function clearAuth() {
   localStorage.removeItem(USER_KEY);
 }
 
+function safeRedirectPath(target, fallback = '/') {
+  if (!target) {
+    return fallback;
+  }
+
+  if (typeof target === 'string' && target.startsWith('/')) {
+    return target;
+  }
+
+  try {
+    const url = new URL(target, window.location.origin);
+    if (url.origin === window.location.origin) {
+      const composed = `${url.pathname}${url.search}${url.hash}`;
+      return composed || fallback;
+    }
+  } catch (err) {
+    // ignore parsing issues and fall back
+  }
+
+  return fallback;
+}
+
+function getNextParam(fallback = '/read.html') {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const nextParam = params.get('next');
+    return safeRedirectPath(nextParam, fallback);
+  } catch (err) {
+    return fallback;
+  }
+}
+
 function escapeHTML(str) {
   if (typeof str !== 'string') {
     return '';
@@ -87,9 +119,33 @@ async function fetchJSON(url, options = {}) {
 
 function guardLoggedIn(redirectIfMissing = '/login.html') {
   if (!getToken()) {
-    window.location.href = redirectIfMissing;
+    window.location.replace(redirectIfMissing);
     throw new Error('Redirecting to login.');
   }
+}
+
+function enforceAuthLinks() {
+  const links = document.querySelectorAll('[data-requires-auth]');
+  links.forEach((link) => {
+    if (link.dataset.authBound === 'true') {
+      return;
+    }
+    link.dataset.authBound = 'true';
+
+    link.addEventListener('click', (event) => {
+      if (getToken()) {
+        return;
+      }
+
+      event.preventDefault();
+      const href = link.getAttribute('href') || '/read.html';
+      const preferred = link.dataset.redirect
+        ? safeRedirectPath(link.dataset.redirect, href)
+        : href;
+      const redirectTarget = safeRedirectPath(preferred, '/read.html');
+      window.location.href = `/login.html?next=${encodeURIComponent(redirectTarget)}`;
+    });
+  });
 }
 
 function renderNav() {
@@ -122,6 +178,8 @@ function renderNav() {
       <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
     `;
   }
+
+  enforceAuthLinks();
 }
 
 function updateUserContext() {
@@ -198,6 +256,17 @@ function initRegisterPage() {
     window.location.href = '/share.html';
     return;
   }
+  let loginRedirect = '/login.html';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const nextParam = params.get('next');
+    if (nextParam) {
+      const safeNext = safeRedirectPath(nextParam, '/read.html');
+      loginRedirect = `/login.html?next=${encodeURIComponent(safeNext)}`;
+    }
+  } catch (err) {
+    // ignore malformed query
+  }
   const form = document.querySelector('form');
   const errorEl = document.querySelector('[data-form-error]');
   const successEl = document.querySelector('[data-form-success]');
@@ -242,7 +311,7 @@ function initRegisterPage() {
         successEl.textContent = 'Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.';
       }
       setTimeout(() => {
-        window.location.href = '/login.html';
+        window.location.href = loginRedirect;
       }, 1600);
     } catch (err) {
       if (errorEl) {
@@ -253,8 +322,10 @@ function initRegisterPage() {
 }
 
 function initLoginPage() {
+  const redirectTarget = getNextParam('/read.html');
+
   if (getToken()) {
-    window.location.href = '/read.html';
+    window.location.replace(redirectTarget);
     return;
   }
 
@@ -287,7 +358,7 @@ function initLoginPage() {
         body: { nickname, password }
       });
       setAuth(payload.token, payload.user);
-      window.location.href = '/read.html';
+      window.location.replace(redirectTarget);
     } catch (err) {
       if (errorEl) {
         errorEl.textContent = err.message || 'Giriş başarısız.';
@@ -312,7 +383,7 @@ function populateCategoryOptions(selectEl, categories, includeAll = false) {
 }
 
 function initSharePage() {
-  guardLoggedIn();
+  guardLoggedIn('/login.html?next=/share.html');
   const categorySelect = document.querySelector('select[name="category"]');
   const form = document.querySelector('form');
   const statusEl = document.querySelector('[data-share-status]');
@@ -404,6 +475,8 @@ function renderSecrets(listEl, secrets) {
 }
 
 function initReadPage() {
+  guardLoggedIn('/login.html?next=/read.html');
+
   const filterSelect = document.querySelector('[data-filter]');
   const listEl = document.querySelector('[data-secrets-list]');
   const randomBtn = document.querySelector('[data-random-btn]');
@@ -477,6 +550,7 @@ function initReadPage() {
 document.addEventListener('DOMContentLoaded', () => {
   renderNav();
   updateUserContext();
+  enforceAuthLinks();
 
   const page = document.body.dataset.page;
   switch (page) {
