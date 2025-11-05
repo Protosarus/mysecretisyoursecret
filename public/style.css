@@ -471,8 +471,7 @@ a {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: glowPulse 3.5s ease-in-out infinite;
-  opacity: 0;
-  animation-fill-mode: forwards;
+  opacity: 1;
 }
 
 .hero-logo span:first-child,
@@ -481,21 +480,20 @@ a {
 }
 
 .hero-logo-middle {
-  font-size: clamp(0.72rem, 2vw, 1.2rem);
-  letter-spacing: 0.28em;
-  animation: fadeInUp 1.2s 0.8s ease-out forwards, glowPulse 3.5s ease-in-out infinite;
-  animation-fill-mode: forwards;
+  font-size: clamp(0.8rem, 1.8vw, 1.25rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(188, 130, 255, 0.45), 0 0 32px rgba(255, 140, 210, 0.35);
+  animation: fadeInUp 1.2s 0.8s ease-out both, glowPulse 3.5s ease-in-out infinite;
 }
 
 .hero-logo span:first-child {
-  animation: fadeInUp 1.2s 0.2s ease-out forwards, glowPulse 3.5s ease-in-out infinite;
-  animation-fill-mode: forwards;
+  animation: fadeInUp 1.2s 0.2s ease-out both, glowPulse 3.5s ease-in-out infinite;
 }
 
 .hero-logo span:last-child {
   margin-top: 0.1em;
-  animation: fadeInUp 1.2s 1.4s ease-out forwards, glowPulse 3.5s ease-in-out infinite;
-  animation-fill-mode: forwards;
+  animation: fadeInUp 1.2s 1.4s ease-out both, glowPulse 3.5s ease-in-out infinite;
 }
 
 .hero-welcome {
