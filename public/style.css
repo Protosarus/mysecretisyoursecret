@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
+
 :root {
   color-scheme: dark;
   --bg: #03010a;
@@ -438,35 +440,39 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3em;
-  color: #fff;
-  text-shadow: 0 0 18px rgba(200, 150, 255, 0.55);
+  gap: 0.45em;
+  color: #f8f6ff;
+  text-shadow: 0 0 22px rgba(181, 150, 255, 0.58);
   text-align: center;
   max-width: 90%;
-  margin: 0 auto 0.25rem;
+  margin: 0 auto 0.4rem;
+  line-height: 1.05;
 }
 
 .hero-logo span {
   display: block;
+  letter-spacing: 0.06em;
+  font-family: 'Cinzel', 'Times New Roman', serif;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .hero-logo span:first-child,
 .hero-logo span:last-child {
-  font-size: clamp(1.7rem, 4.5vw, 3.2rem);
-  font-weight: 700;
+  font-size: clamp(1.6rem, 4.2vw, 3rem);
+  font-weight: 600;
+  text-shadow: 0 0 35px rgba(180, 130, 255, 0.55);
 }
 
 .hero-logo span:last-child {
-  margin-top: 0.05em;
+  margin-top: 0.1em;
 }
 
 .hero-logo-middle {
-  font-size: clamp(0.85rem, 2.4vw, 1.5rem);
-  font-weight: 600;
-  letter-spacing: 0.4em;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(0.85rem, 2.3vw, 1.6rem);
+  font-family: 'Uncial Antiqua', 'Cinzel', serif;
+  letter-spacing: 0.32em;
+  color: rgba(235, 224, 255, 0.9);
+  text-transform: uppercase;
 }
 
 .hero-welcome {
@@ -478,11 +484,13 @@ a {
 
 .hero-subtitle {
   margin: 0;
-  max-width: 460px;
-  padding-inline: clamp(0.5rem, 5vw, 1.6rem);
-  color: var(--muted);
+  max-width: 520px;
+  padding-inline: clamp(0.75rem, 5vw, 2rem);
+  color: rgba(222, 216, 255, 0.78);
   line-height: 1.7;
-  font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  letter-spacing: 0.04em;
+  font-size: clamp(0.92rem, 1.8vw, 1.2rem);
 }
 
 .hero-buttons {
@@ -849,55 +857,38 @@ textarea {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #fff;
-  text-shadow: 0 0 24px rgba(185, 131, 255, 0.65), 0 0 48px rgba(120, 90, 255, 0.45);
-  margin-bottom: 0.5rem;
+  color: #f8f6ff;
+  text-shadow: 0 0 22px rgba(181, 150, 255, 0.58);
+  margin-bottom: 0.4rem;
   max-width: 90%;
   margin-inline: auto;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .hero-logo span {
   display: block;
+  letter-spacing: 0.06em;
+  font-family: 'Cinzel', 'Times New Roman', serif;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .hero-logo span:first-child {
-  font-size: clamp(1.7rem, 4.8vw, 3.2rem);
-  font-weight: 800;
-  background: linear-gradient(90deg, #b983ff, #8ab4ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: clamp(1.6rem, 4.2vw, 3rem);
+  font-weight: 600;
+  text-shadow: 0 0 35px rgba(180, 130, 255, 0.55);
 }
 
 .hero-logo-middle {
-  font-size: clamp(0.95rem, 2.6vw, 1.6rem);
-  color: #cbb6ff;
-  text-shadow: 0 0 22px rgba(185, 131, 255, 0.75);
-  margin: 0.25rem 0;
-  animation: glow-pulse 2.5s ease-in-out infinite;
+  font-size: clamp(0.85rem, 2.3vw, 1.6rem);
+  font-family: 'Uncial Antiqua', 'Cinzel', serif;
+  letter-spacing: 0.32em;
+  color: rgba(235, 224, 255, 0.9);
+  text-transform: uppercase;
 }
 
 .hero-logo span:last-child {
-  font-size: clamp(1.7rem, 4.8vw, 3.2rem);
-  font-weight: 800;
-  background: linear-gradient(90deg, #8ab4ff, #b983ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Neon animasyonu */
-@keyframes glow-pulse {
-  0% {
-    text-shadow: 0 0 10px rgba(190, 140, 255, 0.5), 0 0 20px rgba(190, 140, 255, 0.3);
-  }
-  50% {
-    text-shadow: 0 0 25px rgba(190, 140, 255, 0.9), 0 0 60px rgba(140, 120, 255, 0.7);
-  }
-  100% {
-    text-shadow: 0 0 10px rgba(190, 140, 255, 0.5), 0 0 20px rgba(190, 140, 255, 0.3);
-  }
+  font-size: clamp(1.6rem, 4.2vw, 3rem);
+  font-weight: 600;
+  text-shadow: 0 0 35px rgba(180, 130, 255, 0.55);
+  margin-top: 0.1em;
 }
