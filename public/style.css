@@ -79,10 +79,12 @@ a {
 }
 
 .brand {
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   text-transform: lowercase;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  text-shadow: 0 0 18px rgba(168, 120, 255, 0.45);
 }
 
 .nav-right {
@@ -516,6 +518,12 @@ a {
 .hero .btn.outline:hover,
 .hero .btn.outline:focus {
   background: var(--accent-hover);
+}
+
+.hero .btn {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .card {
