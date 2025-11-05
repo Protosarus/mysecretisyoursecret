@@ -477,12 +477,12 @@ a {
 
 .hero-logo span:first-child,
 .hero-logo span:last-child {
-  font-size: clamp(1.7rem, 4.4vw, 3.2rem);
+  font-size: clamp(1.45rem, 3.6vw, 2.6rem);
 }
 
- .hero-logo-middle {
-  font-size: clamp(0.9rem, 2.4vw, 1.6rem);
-  letter-spacing: 0.35em;
+.hero-logo-middle {
+  font-size: clamp(0.72rem, 2vw, 1.2rem);
+  letter-spacing: 0.28em;
   animation: fadeInUp 1.2s 0.8s ease-out forwards, glowPulse 3.5s ease-in-out infinite;
   animation-fill-mode: forwards;
 }
