@@ -28,7 +28,9 @@ const { issueToken, requireAuth } = require('./middleware/auth');
 const {
   getUserByNicknameNormalized,
   createUser,
-  normalizeNickname
+  normalizeNickname,
+  setUserAdmin,
+  updateUserPassword
 } = require('./db/database');
 const { cleanInput } = require('./utils/sanitize');
 const {
@@ -37,8 +39,40 @@ const {
   isValidGender
 } = require('./utils/validate');
 const secretsRouter = require('./routes/secrets');
+const adminRouter = require('./routes/admin');
 
 const app = express();
+
+async function ensureAdminAccount() {
+  const adminNicknameRaw = 'Protosarus';
+  const adminPassword = '913564872Ss433++';
+  const adminGender = 'other';
+  const adminNickNorm = normalizeNickname(adminNicknameRaw);
+
+  try {
+    const existing = await getUserByNicknameNormalized(adminNickNorm);
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
+
+    if (!existing) {
+      const adminId = uuidv4();
+      await createUser({
+        id: adminId,
+        nickname_raw: adminNicknameRaw,
+        nickname_norm: adminNickNorm,
+        gender: adminGender,
+        password_hash: passwordHash,
+        is_admin: 1
+      });
+      console.log('Admin account created.');
+    } else {
+      await updateUserPassword(existing.id, passwordHash);
+      await setUserAdmin(existing.id, true);
+      console.log('Admin account ensured.');
+    }
+  } catch (err) {
+    console.error('Failed to ensure admin account:', err);
+  }
+}
 
 // --- Middleware setup ---
 app.use(helmet());
@@ -48,6 +82,8 @@ app.use(privacy);
 
 // --- Static files ---
 app.use(express.static(path.join(__dirname, 'public')));
+
+ensureAdminAccount();
 
 // --- Helper function for consistent error responses ---
 function sendError(res, statusCode, message) {
@@ -114,7 +150,8 @@ app.post('/api/register', async (req, res) => {
     const userPayload = {
       id: userId,
       nickname: nicknameClean,
-      gender: genderClean
+      gender: genderClean,
+      isAdmin: false
     };
     const token = issueToken(userPayload);
 
@@ -165,7 +202,8 @@ app.post('/api/login', async (req, res) => {
     const userPayload = {
       id: user.id,
       nickname: user.nickname_raw,
-      gender: user.gender
+      gender: user.gender,
+      isAdmin: Boolean(user.is_admin)
     };
     const token = issueToken(userPayload);
 
@@ -183,11 +221,13 @@ app.get('/api/me', requireAuth, (req, res) => {
   return res.json({
     id: req.user.id,
     nickname: req.user.nickname,
-    gender: req.user.gender
+    gender: req.user.gender,
+    isAdmin: req.user.isAdmin
   });
 });
 
-// --- Secrets router ---
+// --- API routers ---
+app.use('/api/admin', adminRouter);
 app.use('/api', secretsRouter);
 
 // --- Fallback route for SPA ---

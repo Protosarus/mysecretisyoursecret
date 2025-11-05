@@ -10,7 +10,8 @@ function issueToken(user) {
   const payload = {
     id: user.id,
     nickname: user.nickname,
-    gender: user.gender
+    gender: user.gender,
+    isAdmin: Boolean(user.isAdmin)
   };
   return jwt.sign(payload, getSecret(), {
     algorithm: 'HS256',
@@ -31,7 +32,8 @@ function requireAuth(req, res, next) {
     req.user = {
       id: decoded.id,
       nickname: decoded.nickname,
-      gender: decoded.gender
+      gender: decoded.gender,
+      isAdmin: Boolean(decoded.isAdmin)
     };
     return next();
   } catch (err) {
@@ -39,7 +41,15 @@ function requireAuth(req, res, next) {
   }
 }
 
+function requireAdmin(req, res, next) {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ message: 'Admin authorization required.' });
+  }
+  return next();
+}
+
 module.exports = {
   issueToken,
-  requireAuth
+  requireAuth,
+  requireAdmin
 };

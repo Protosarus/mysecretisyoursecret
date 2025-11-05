@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Just Between Us</title>
+    <link rel="stylesheet" href="/style.css?v=20241103" />
+    <script>
+      (function enforceAdminEarly() {
+        try {
+          var token = localStorage.getItem('auth_token');
+          var rawUser = localStorage.getItem('auth_user');
+          var user = rawUser ? JSON.parse(rawUser) : null;
+          if (!token || !user || !user.isAdmin) {
+            window.location.replace('/login.html?next=%2Fadmin.html');
+          }
+        } catch (err) {
+          window.location.replace('/login.html?next=%2Fadmin.html');
+        }
+      })();
+    </script>
+    <script src="/script.js" defer></script>
+  </head>
+  <body data-page="admin">
+    <header class="top-bar">
+      <a class="brand" href="/index.html">Just Between Us 😉</a>
+      <div class="nav-right" data-nav-auth>
+        <a class="nav-btn" href="/login.html">Giriş</a>
+        <a class="nav-btn primary" href="/register.html">Kayıt Ol</a>
+      </div>
+    </header>
+
+    <main class="admin-page">
+      <section class="admin-card">
+        <header class="admin-card-header">
+          <div>
+            <h1>Üyeler</h1>
+            <p class="admin-subtitle">Kayıtlı kullanıcıları görüntüle, gerekirse sil.</p>
+          </div>
+          <button type="button" class="admin-btn" data-admin-refresh-users>Yenile</button>
+        </header>
+        <div class="admin-status" data-admin-users-status></div>
+        <div data-admin-users></div>
+      </section>
+
+      <section class="admin-card">
+        <header class="admin-card-header">
+          <div>
+            <h1>Sırlar</h1>
+            <p class="admin-subtitle">Paylaşılan sırları incele ve uygunsuz olanları kaldır.</p>
+          </div>
+          <button type="button" class="admin-btn" data-admin-refresh-secrets>Yenile</button>
+        </header>
+        <div class="admin-status" data-admin-secrets-status></div>
+        <div data-admin-secrets></div>
+      </section>
+    </main>
+  </body>
+</html>

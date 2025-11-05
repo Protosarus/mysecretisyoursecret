@@ -124,6 +124,18 @@ function guardLoggedIn(redirectIfMissing = '/login.html') {
   }
 }
 
+function guardAdmin(redirectIfMissing = '/login.html?next=/admin.html') {
+  const user = getUser();
+  if (!user) {
+    window.location.replace(redirectIfMissing);
+    throw new Error('Redirecting to login.');
+  }
+  if (!user.isAdmin) {
+    window.location.replace('/index.html');
+    throw new Error('Redirecting to home.');
+  }
+}
+
 function enforceAuthLinks() {
   const links = document.querySelectorAll('[data-requires-auth]');
   links.forEach((link) => {
@@ -156,7 +168,11 @@ function renderNav() {
 
   const user = getUser();
   if (user) {
+    const adminLink = user.isAdmin
+      ? `<a class="nav-btn" href="/admin.html" data-requires-auth="true" data-redirect="/admin.html">Admin Panel</a>`
+      : '';
     navRight.innerHTML = `
+      ${adminLink}
       <span class="user-badge" data-user-badge>
         <span>${escapeHTML(user.nickname)}</span>
         <span>${genderIcon(user.gender)}</span>
@@ -474,6 +490,224 @@ function renderSecrets(listEl, secrets) {
     .join('');
 }
 
+function renderAdminUsers(container, users, currentUserId) {
+  if (!container) {
+    return;
+  }
+  if (!users || users.length === 0) {
+    container.innerHTML = '<p class="muted-text">Kayıtlı kullanıcı yok.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Kullanıcı</th>
+            <th>Rol</th>
+            <th>Cinsiyet</th>
+            <th>Sır Sayısı</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users
+            .map((user) => {
+            const roleLabel = user.isAdmin ? 'Admin' : 'Üye';
+            const disableDelete = user.isAdmin || user.id === currentUserId;
+            const actionCell = disableDelete
+              ? '<span class="admin-muted">—</span>'
+              : `<button type="button" class="admin-btn danger" data-admin-delete-user="${user.id}">Sil</button>`;
+            return `
+              <tr>
+                <td>${escapeHTML(user.nickname)}</td>
+                <td>${roleLabel}</td>
+                <td>${escapeHTML(user.gender)}</td>
+                <td>${user.secretCount}</td>
+                <td>${actionCell}</td>
+              </tr>
+            `;
+          })
+          .join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.querySelectorAll('[data-admin-delete-user]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const userId = btn.dataset.adminDeleteUser;
+      if (!userId) {
+        return;
+      }
+      if (!window.confirm('Bu kullanıcı silinsin mi? Buna ait tüm sırlar da silinecek.')) {
+        return;
+      }
+      try {
+        await fetchJSON(`/api/admin/users/${encodeURIComponent(userId)}`, {
+          method: 'DELETE'
+        });
+        btn.dispatchEvent(new CustomEvent('admin:user-deleted', { bubbles: true, detail: { userId } }));
+      } catch (err) {
+        alert(err.message || 'Kullanıcı silinemedi.');
+      }
+    });
+  });
+}
+
+function renderAdminSecrets(container, secrets) {
+  if (!container) {
+    return;
+  }
+  if (!secrets || secrets.length === 0) {
+    container.innerHTML = '<p class="muted-text">Henüz sır paylaşılmamış.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Takma Ad</th>
+            <th>Kategori</th>
+            <th>İçerik</th>
+            <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${secrets
+          .map((secret) => {
+            const preview = secret.content.length > 140
+              ? `${secret.content.slice(0, 137)}...`
+              : secret.content;
+            return `
+              <tr>
+                <td>${secret.id}</td>
+                <td>${escapeHTML(secret.nickname)}</td>
+                <td>${escapeHTML(secret.category)}</td>
+                <td>${escapeHTML(preview)}</td>
+                <td><button type="button" class="admin-btn danger" data-admin-delete-secret="${secret.id}">Sil</button></td>
+              </tr>
+            `;
+          })
+          .join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.querySelectorAll('[data-admin-delete-secret]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const secretId = btn.dataset.adminDeleteSecret;
+      if (!secretId) {
+        return;
+      }
+      if (!window.confirm('Bu sır silinsin mi?')) {
+        return;
+      }
+      try {
+        await fetchJSON(`/api/admin/secrets/${encodeURIComponent(secretId)}`, {
+          method: 'DELETE'
+        });
+        btn.dispatchEvent(new CustomEvent('admin:secret-deleted', { bubbles: true, detail: { secretId } }));
+      } catch (err) {
+        alert(err.message || 'Sır silinemedi.');
+      }
+    });
+  });
+}
+
+function initAdminPage() {
+  try {
+    guardAdmin();
+  } catch (err) {
+    return;
+  }
+
+  const currentUser = getUser();
+  const usersContainer = document.querySelector('[data-admin-users]');
+  const secretsContainer = document.querySelector('[data-admin-secrets]');
+  const usersStatus = document.querySelector('[data-admin-users-status]');
+  const secretsStatus = document.querySelector('[data-admin-secrets-status]');
+  const refreshUsersBtn = document.querySelector('[data-admin-refresh-users]');
+  const refreshSecretsBtn = document.querySelector('[data-admin-refresh-secrets]');
+
+  const handleAuthError = (err) => {
+    if (err && (err.status === 401 || err.status === 403)) {
+      clearAuth();
+      window.location.replace('/login.html?next=/admin.html');
+      return true;
+    }
+    return false;
+  };
+
+  const loadUsers = async () => {
+    if (usersStatus) {
+      usersStatus.textContent = 'Kullanıcılar yükleniyor...';
+    }
+    try {
+      const users = await fetchJSON('/api/admin/users');
+      renderAdminUsers(usersContainer, users, currentUser ? currentUser.id : null);
+      if (usersStatus) {
+        usersStatus.textContent = '';
+      }
+    } catch (err) {
+      if (handleAuthError(err)) {
+        return;
+      }
+      if (usersStatus) {
+        usersStatus.textContent = err.message || 'Kullanıcılar yüklenemedi.';
+      }
+    }
+  };
+
+  const loadSecrets = async () => {
+    if (secretsStatus) {
+      secretsStatus.textContent = 'Sırlar yükleniyor...';
+    }
+    try {
+      const secrets = await fetchJSON('/api/admin/secrets');
+      renderAdminSecrets(secretsContainer, secrets);
+      if (secretsStatus) {
+        secretsStatus.textContent = '';
+      }
+    } catch (err) {
+      if (handleAuthError(err)) {
+        return;
+      }
+      if (secretsStatus) {
+        secretsStatus.textContent = err.message || 'Sırlar yüklenemedi.';
+      }
+    }
+  };
+
+  if (refreshUsersBtn) {
+    refreshUsersBtn.addEventListener('click', loadUsers);
+  }
+  if (refreshSecretsBtn) {
+    refreshSecretsBtn.addEventListener('click', loadSecrets);
+  }
+
+  if (usersContainer) {
+    usersContainer.addEventListener('admin:user-deleted', () => {
+      loadUsers();
+      loadSecrets();
+    });
+  }
+
+  if (secretsContainer) {
+    secretsContainer.addEventListener('admin:secret-deleted', () => {
+      loadSecrets();
+    });
+  }
+
+  loadUsers();
+  loadSecrets();
+}
+
 function initReadPage() {
   guardLoggedIn('/login.html?next=/read.html');
 
@@ -569,6 +803,9 @@ document.addEventListener('DOMContentLoaded', () => {
     case 'read':
       initReadPage();
       break;
+    case 'admin':
+      initAdminPage();
+      break;
     default:
       break;
   }
@@ -582,5 +819,6 @@ window.mySecretApp = {
   fetchJSON,
   genderIcon,
   escapeHTML,
-  guardLoggedIn
+  guardLoggedIn,
+  guardAdmin
 };

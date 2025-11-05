@@ -12,7 +12,8 @@ db.serialize(() => {
       nickname TEXT UNIQUE NOT NULL,
       nickname_raw TEXT NOT NULL,
       password_hash TEXT NOT NULL,
-      gender TEXT NOT NULL CHECK (gender IN ('male','female','other'))
+      gender TEXT NOT NULL CHECK (gender IN ('male','female','other')),
+      is_admin INTEGER NOT NULL DEFAULT 0
     )
   `);
 
@@ -36,6 +37,14 @@ db.serialize(() => {
     CREATE INDEX IF NOT EXISTS idx_secrets_category
     ON secrets(category)
   `);
+  db.run(
+    'ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0',
+    (err) => {
+      if (err && !/duplicate column name/i.test(err.message || '')) {
+        console.error('Failed to add is_admin column:', err.message);
+      }
+    }
+  );
 });
 
 function normalizeNickname(str) {
@@ -60,14 +69,21 @@ function getUserByNicknameNormalized(nickNorm) {
   });
 }
 
-function createUser({ id, nickname_raw, nickname_norm, gender, password_hash }) {
+function createUser({
+  id,
+  nickname_raw,
+  nickname_norm,
+  gender,
+  password_hash,
+  is_admin = 0
+}) {
   return new Promise((resolve, reject) => {
     db.run(
       `
-        INSERT INTO users (id, nickname, nickname_raw, password_hash, gender)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO users (id, nickname, nickname_raw, password_hash, gender, is_admin)
+        VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [id, nickname_norm, nickname_raw, password_hash, gender],
+      [id, nickname_norm, nickname_raw, password_hash, gender, is_admin ? 1 : 0],
       (err) => {
         if (err) {
           return reject(err);
@@ -154,6 +170,124 @@ function getRandomSecret() {
   });
 }
 
+function setUserAdmin(userId, isAdmin) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'UPDATE users SET is_admin = ? WHERE id = ?',
+      [isAdmin ? 1 : 0, userId],
+      function onComplete(err) {
+        if (err) {
+          return reject(err);
+        }
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+function updateUserPassword(userId, password_hash) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [password_hash, userId],
+      function onComplete(err) {
+        if (err) {
+          return reject(err);
+        }
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+function listUsersWithStats() {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `
+        SELECT
+          u.id,
+          u.nickname_raw AS nickname,
+          u.gender,
+          u.is_admin AS isAdmin,
+          COUNT(s.id) AS secretCount
+        FROM users u
+        LEFT JOIN secrets s ON s.user_id = u.id
+        GROUP BY u.id
+        ORDER BY u.nickname_raw COLLATE NOCASE
+      `,
+      [],
+      (err, rows) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(rows || []);
+      }
+    );
+  });
+}
+
+function deleteUserById(userId) {
+  return new Promise((resolve, reject) => {
+    db.run('DELETE FROM secrets WHERE user_id = ?', [userId], (secretErr) => {
+      if (secretErr) {
+        return reject(secretErr);
+      }
+      db.run(
+        'DELETE FROM users WHERE id = ?',
+        [userId],
+        function onComplete(userErr) {
+          if (userErr) {
+            return reject(userErr);
+          }
+          resolve(this.changes > 0);
+        }
+      );
+    });
+  });
+}
+
+function deleteSecretById(secretId) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'DELETE FROM secrets WHERE id = ?',
+      [secretId],
+      function onComplete(err) {
+        if (err) {
+          return reject(err);
+        }
+        resolve(this.changes > 0);
+      }
+    );
+  });
+}
+
+function listAllSecrets(limit = 200) {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `
+        SELECT
+          secrets.id,
+          secrets.category,
+          secrets.content,
+          secrets.created_at,
+          users.nickname_raw AS nickname,
+          users.gender
+        FROM secrets
+        JOIN users ON users.id = secrets.user_id
+        ORDER BY secrets.created_at DESC
+        LIMIT ?
+      `,
+      [limit],
+      (err, rows) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(rows || []);
+      }
+    );
+  });
+}
+
 module.exports = {
   db,
   normalizeNickname,
@@ -161,5 +295,11 @@ module.exports = {
   createUser,
   insertSecret,
   listSecrets,
-  getRandomSecret
+  getRandomSecret,
+  setUserAdmin,
+  updateUserPassword,
+  listUsersWithStats,
+  deleteUserById,
+  deleteSecretById,
+  listAllSecrets
 };
