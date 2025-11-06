@@ -119,6 +119,12 @@ a {
   text-shadow: 0 0 12px rgba(168, 120, 255, 0.35);
 }
 
+.nav-btn[data-gothic]:hover,
+.nav-btn[data-gothic]:focus {
+  color: #fff5ff;
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
 .nav-btn.primary {
   background: var(--accent);
   color: #070016;
