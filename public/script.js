@@ -223,7 +223,7 @@ function initIndexPage() {
 
   if (user) {
     if (welcome) {
-      welcome.innerHTML = `Hoş geldin, ${escapeHTML(user.nickname)} ${genderIcon(user.gender)}`;
+      welcome.innerHTML = `Welcome back, ${escapeHTML(user.nickname)} ${genderIcon(user.gender)}`;
     }
     if (loggedInSection) {
       loggedInSection.classList.remove('hidden');
@@ -234,7 +234,7 @@ function initIndexPage() {
     if (randomBtn && randomOutput && randomContainer) {
       randomBtn.addEventListener('click', async () => {
         randomBtn.disabled = true;
-        randomBtn.textContent = 'Yükleniyor...';
+        randomBtn.textContent = 'Loading...';
         randomOutput.textContent = '';
         randomContainer.classList.add('hidden');
         try {
@@ -250,10 +250,10 @@ function initIndexPage() {
           `;
           randomContainer.classList.remove('hidden');
         } catch (err) {
-          randomOutput.innerHTML = `<p class="muted-text">Henüz sır yok.</p>`;
+          randomOutput.innerHTML = `<p class="muted-text">No secrets yet.</p>`;
         } finally {
           randomBtn.disabled = false;
-          randomBtn.textContent = 'Rastgele Sır Göster';
+          randomBtn.textContent = 'Show A Random Secret';
         }
       });
     }
@@ -306,14 +306,14 @@ function initRegisterPage() {
 
     if (nickname.length < 2 || nickname.length > 32) {
       if (errorEl) {
-        errorEl.textContent = 'Takma ad 2-32 karakter arasında olmalı.';
+        errorEl.textContent = 'Nickname must be between 2 and 32 characters.';
       }
       return;
     }
 
     if (password.length < 6) {
       if (errorEl) {
-        errorEl.textContent = 'Şifre en az 6 karakter olmalı.';
+        errorEl.textContent = 'Password must be at least 6 characters.';
       }
       return;
     }
@@ -324,14 +324,14 @@ function initRegisterPage() {
         body: { nickname, password, gender }
       });
       if (successEl) {
-        successEl.textContent = 'Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.';
+        successEl.textContent = 'Registration successful! Redirecting to the gate...';
       }
       setTimeout(() => {
         window.location.href = loginRedirect;
       }, 1600);
     } catch (err) {
       if (errorEl) {
-        errorEl.textContent = err.message || 'Kayıt başarısız.';
+        errorEl.textContent = err.message || 'Registration failed.';
       }
     }
   });
@@ -363,7 +363,7 @@ function initLoginPage() {
 
     if (!nickname || !password) {
       if (errorEl) {
-        errorEl.textContent = 'Takma ad ve şifre gerekli.';
+        errorEl.textContent = 'Nickname and password are required.';
       }
       return;
     }
@@ -377,7 +377,7 @@ function initLoginPage() {
       window.location.replace(redirectTarget);
     } catch (err) {
       if (errorEl) {
-        errorEl.textContent = err.message || 'Giriş başarısız.';
+        errorEl.textContent = err.message || 'Sign in failed.';
       }
     }
   });
@@ -391,7 +391,7 @@ function populateCategoryOptions(selectEl, categories, includeAll = false) {
   selectEl.innerHTML = options
     .map((cat) => {
       if (cat === '__all__') {
-        return '<option value="">Tüm kategoriler</option>';
+        return '<option value="">All categories</option>';
       }
       return `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`;
     })
@@ -410,7 +410,7 @@ function initSharePage() {
     })
     .catch(() => {
       if (statusEl) {
-        statusEl.textContent = 'Kategoriler yüklenemedi.';
+      statusEl.textContent = 'Categories could not be loaded.';
         statusEl.classList.remove('form-success');
         statusEl.classList.add('form-error');
       }
@@ -432,7 +432,7 @@ function initSharePage() {
 
     if (!category) {
       if (statusEl) {
-        statusEl.textContent = 'Lütfen bir kategori seç.';
+      statusEl.textContent = 'Please choose a category.';
         statusEl.classList.add('form-error');
       }
       return;
@@ -440,7 +440,7 @@ function initSharePage() {
 
     if (content.length < 2) {
       if (statusEl) {
-        statusEl.textContent = 'Sır metni çok kısa.';
+      statusEl.textContent = 'Secret message is too short.';
         statusEl.classList.add('form-error');
       }
       return;
@@ -453,12 +453,12 @@ function initSharePage() {
       });
       form.reset();
       if (statusEl) {
-        statusEl.textContent = 'Sır başarıyla paylaşıldı!';
+        statusEl.textContent = 'Secret shared successfully!';
         statusEl.classList.add('form-success');
       }
     } catch (err) {
       if (statusEl) {
-        statusEl.textContent = err.message || 'Paylaşım başarısız.';
+        statusEl.textContent = err.message || 'Secret could not be shared.';
         statusEl.classList.add('form-error');
       }
     }
@@ -471,7 +471,7 @@ function renderSecrets(listEl, secrets) {
   }
 
   if (!secrets || secrets.length === 0) {
-    listEl.innerHTML = '<p class="muted-text">Henüz paylaşım yok. İlk fısıltıyı sen bırak.</p>';
+    listEl.innerHTML = '<p class="muted-text">No whispers yet. Be the first to leave one.</p>';
     return;
   }
 
@@ -495,7 +495,7 @@ function renderAdminUsers(container, users, currentUserId) {
     return;
   }
   if (!users || users.length === 0) {
-    container.innerHTML = '<p class="muted-text">Kayıtlı kullanıcı yok.</p>';
+    container.innerHTML = '<p class="muted-text">No members yet.</p>';
     return;
   }
 
@@ -504,21 +504,21 @@ function renderAdminUsers(container, users, currentUserId) {
       <table class="admin-table">
         <thead>
           <tr>
-            <th>Kullanıcı</th>
-            <th>Rol</th>
-            <th>Cinsiyet</th>
-            <th>Sır Sayısı</th>
-            <th>İşlem</th>
+            <th>Member</th>
+            <th>Role</th>
+            <th>Gender</th>
+            <th>Secret Count</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           ${users
             .map((user) => {
-            const roleLabel = user.isAdmin ? 'Admin' : 'Üye';
+            const roleLabel = user.isAdmin ? 'Circle Master' : 'Member';
             const disableDelete = user.isAdmin || user.id === currentUserId;
             const actionCell = disableDelete
               ? '<span class="admin-muted">—</span>'
-              : `<button type="button" class="admin-btn danger" data-admin-delete-user="${user.id}">Sil</button>`;
+              : `<button type="button" class="admin-btn danger" data-admin-delete-user="${user.id}">Delete</button>`;
             return `
               <tr>
                 <td>${escapeHTML(user.nickname)}</td>
@@ -541,7 +541,7 @@ function renderAdminUsers(container, users, currentUserId) {
       if (!userId) {
         return;
       }
-      if (!window.confirm('Bu kullanıcı silinsin mi? Buna ait tüm sırlar da silinecek.')) {
+      if (!window.confirm('Delete this member? All of their secrets will vanish.')) {
         return;
       }
       try {
@@ -550,7 +550,7 @@ function renderAdminUsers(container, users, currentUserId) {
         });
         btn.dispatchEvent(new CustomEvent('admin:user-deleted', { bubbles: true, detail: { userId } }));
       } catch (err) {
-        alert(err.message || 'Kullanıcı silinemedi.');
+        alert(err.message || 'Failed to delete member.');
       }
     });
   });
@@ -561,7 +561,7 @@ function renderAdminSecrets(container, secrets) {
     return;
   }
   if (!secrets || secrets.length === 0) {
-    container.innerHTML = '<p class="muted-text">Henüz sır paylaşılmamış.</p>';
+    container.innerHTML = '<p class="muted-text">No secrets have been shared yet.</p>';
     return;
   }
 
@@ -571,10 +571,10 @@ function renderAdminSecrets(container, secrets) {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Takma Ad</th>
-            <th>Kategori</th>
-            <th>İçerik</th>
-            <th>İşlem</th>
+            <th>Alias</th>
+            <th>Category</th>
+            <th>Content</th>
+            <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -589,7 +589,7 @@ function renderAdminSecrets(container, secrets) {
                 <td>${escapeHTML(secret.nickname)}</td>
                 <td>${escapeHTML(secret.category)}</td>
                 <td>${escapeHTML(preview)}</td>
-                <td><button type="button" class="admin-btn danger" data-admin-delete-secret="${secret.id}">Sil</button></td>
+                <td><button type="button" class="admin-btn danger" data-admin-delete-secret="${secret.id}">Delete</button></td>
               </tr>
             `;
           })
@@ -605,7 +605,7 @@ function renderAdminSecrets(container, secrets) {
       if (!secretId) {
         return;
       }
-      if (!window.confirm('Bu sır silinsin mi?')) {
+      if (!window.confirm('Delete this secret?')) {
         return;
       }
       try {
@@ -614,7 +614,7 @@ function renderAdminSecrets(container, secrets) {
         });
         btn.dispatchEvent(new CustomEvent('admin:secret-deleted', { bubbles: true, detail: { secretId } }));
       } catch (err) {
-        alert(err.message || 'Sır silinemedi.');
+        alert(err.message || 'Failed to delete secret.');
       }
     });
   });
@@ -646,7 +646,7 @@ function initAdminPage() {
 
   const loadUsers = async () => {
     if (usersStatus) {
-      usersStatus.textContent = 'Kullanıcılar yükleniyor...';
+      usersStatus.textContent = 'Loading members...';
     }
     try {
       const users = await fetchJSON('/api/admin/users');
@@ -659,14 +659,14 @@ function initAdminPage() {
         return;
       }
       if (usersStatus) {
-        usersStatus.textContent = err.message || 'Kullanıcılar yüklenemedi.';
+        usersStatus.textContent = err.message || 'Unable to load members.';
       }
     }
   };
 
   const loadSecrets = async () => {
     if (secretsStatus) {
-      secretsStatus.textContent = 'Sırlar yükleniyor...';
+      secretsStatus.textContent = 'Loading secrets...';
     }
     try {
       const secrets = await fetchJSON('/api/admin/secrets');
@@ -679,7 +679,7 @@ function initAdminPage() {
         return;
       }
       if (secretsStatus) {
-        secretsStatus.textContent = err.message || 'Sırlar yüklenemedi.';
+        secretsStatus.textContent = err.message || 'Unable to load secrets.';
       }
     }
   };
@@ -737,7 +737,7 @@ function initReadPage() {
       })
       .catch((err) => {
         if (listEl) {
-          listEl.innerHTML = `<p class="muted-text">${err.message || 'Sırlar getirilemedi.'}</p>`;
+        listEl.innerHTML = `<p class="muted-text">${err.message || 'Secrets could not be retrieved.'}</p>`;
         }
       });
   }
@@ -758,7 +758,7 @@ function initReadPage() {
   if (randomBtn && randomArea) {
     randomBtn.addEventListener('click', async () => {
       randomBtn.disabled = true;
-      randomBtn.textContent = 'Yükleniyor...';
+      randomBtn.textContent = 'Loading...';
       randomArea.innerHTML = '';
       try {
         const secret = await fetchJSON('/api/random');
@@ -772,10 +772,10 @@ function initReadPage() {
           </article>
         `;
       } catch (err) {
-        randomArea.innerHTML = `<p class="muted-text">${err.message || 'Henüz sır yok.'}</p>`;
+        randomArea.innerHTML = `<p class="muted-text">${err.message || 'No secrets yet.'}</p>`;
       } finally {
         randomBtn.disabled = false;
-        randomBtn.textContent = 'Rastgele Sır Göster';
+        randomBtn.textContent = 'Show A Random Secret';
       }
     });
   }

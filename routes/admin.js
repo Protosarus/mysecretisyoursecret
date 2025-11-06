@@ -18,23 +18,23 @@ router.get('/users', async (req, res) => {
     const users = await listUsersWithStats();
     return res.json(users);
   } catch (err) {
-    return res.status(500).json({ message: 'Kullanıcılar getirilemedi.' });
+    return res.status(500).json({ message: 'Members could not be retrieved.' });
   }
 });
 
 router.delete('/users/:id', async (req, res) => {
   const { id } = req.params;
   if (id === req.user.id) {
-    return res.status(400).json({ message: 'Kendi hesabını silemezsin.' });
+    return res.status(400).json({ message: 'You cannot delete your own account.' });
   }
   try {
     const removed = await deleteUserById(id);
     if (!removed) {
-      return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
+      return res.status(404).json({ message: 'Member not found.' });
     }
-    return res.json({ message: 'Kullanıcı silindi.' });
+    return res.json({ message: 'Member deleted.' });
   } catch (err) {
-    return res.status(500).json({ message: 'Kullanıcı silinemedi.' });
+    return res.status(500).json({ message: 'Failed to delete member.' });
   }
 });
 
@@ -43,7 +43,7 @@ router.get('/secrets', async (req, res) => {
     const secrets = await listAllSecrets();
     return res.json(secrets);
   } catch (err) {
-    return res.status(500).json({ message: 'Sırlar getirilemedi.' });
+    return res.status(500).json({ message: 'Secrets could not be retrieved.' });
   }
 });
 
@@ -52,11 +52,11 @@ router.delete('/secrets/:id', async (req, res) => {
   try {
     const removed = await deleteSecretById(Number(id));
     if (!removed) {
-      return res.status(404).json({ message: 'Sır bulunamadı.' });
+      return res.status(404).json({ message: 'Secret not found.' });
     }
-    return res.json({ message: 'Sır silindi.' });
+    return res.json({ message: 'Secret deleted.' });
   } catch (err) {
-    return res.status(500).json({ message: 'Sır silinemedi.' });
+    return res.status(500).json({ message: 'Failed to delete secret.' });
   }
 });
 
