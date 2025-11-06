@@ -314,19 +314,19 @@ a {
   border: 0;
 }
 .auth-page {
-  min-height: calc(100vh - 96px);
+  min-height: calc(100vh - 110px);
   display: grid;
   place-items: center;
-  padding: 3rem 1.5rem 4rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 1.5rem);
   background: radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.12), transparent 40%),
     radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.1), transparent 42%);
 }
 
 .share-page {
-  min-height: calc(100vh - 96px);
+  min-height: calc(100vh - 110px);
   display: grid;
   place-items: center;
-  padding: 3rem 1.5rem 4rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 1.5rem);
   background: radial-gradient(circle at 18% 30%, rgba(139, 92, 246, 0.18), transparent 45%),
     radial-gradient(circle at 82% 75%, rgba(30, 64, 175, 0.22), transparent 48%);
 }
@@ -598,7 +598,7 @@ a {
 
 .auth-card {
   width: min(520px, 100%);
-  padding: 3rem 2.5rem;
+  padding: clamp(1.8rem, 4vw, 2.4rem);
   background: linear-gradient(155deg, rgba(12, 3, 32, 0.95), rgba(68, 20, 90, 0.6));
   border-radius: calc(var(--radius) + 10px);
   border: 1px solid rgba(130, 90, 255, 0.45);
@@ -607,7 +607,7 @@ a {
 
 .share-card {
   width: min(640px, 100%);
-  padding: 3.1rem 2.8rem;
+  padding: clamp(1.8rem, 4vw, 2.6rem);
   background: linear-gradient(155deg, rgba(10, 5, 20, 0.92), rgba(38, 10, 60, 0.62));
   border-radius: calc(var(--radius) + 10px);
   border: 1px solid rgba(129, 140, 248, 0.28);
