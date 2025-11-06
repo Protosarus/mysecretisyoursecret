@@ -172,7 +172,6 @@ function renderNav() {
       ? `<a class="nav-btn" href="/admin.html" data-requires-auth="true" data-redirect="/admin.html" data-gothic>Admin Sanctum</a>`
       : '';
     navRight.innerHTML = `
-      <a class="nav-btn" href="/index.html" data-gothic>Home</a>
       ${adminLink}
       <span class="user-badge" data-user-badge>
         <span>${escapeHTML(user.nickname)}</span>
@@ -191,7 +190,6 @@ function renderNav() {
     }
   } else {
     navRight.innerHTML = `
-      <a class="nav-btn" href="/index.html" data-gothic>Home</a>
       <a class="nav-btn" href="/login.html" data-gothic>Enter</a>
       <a class="nav-btn primary" href="/register.html" data-gothic>Join Us</a>
     `;
