@@ -1,5 +1,6 @@
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
+const RATING_KEY = 'secret_ratings';
 
 function setAuth(token, user) {
   localStorage.setItem(TOKEN_KEY, token);
@@ -25,6 +26,68 @@ function getUser() {
 function clearAuth() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+}
+
+function getStoredRatings() {
+  try {
+    const raw = localStorage.getItem(RATING_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function saveRating(secretId, rating) {
+  const current = getStoredRatings();
+  current[secretId] = rating;
+  try {
+    localStorage.setItem(RATING_KEY, JSON.stringify(current));
+  } catch (err) {
+    // ignore quota issues
+  }
+}
+
+function updateStarVisuals(container, rating) {
+  container.querySelectorAll('[data-star-value]').forEach((star) => {
+    const value = Number(star.dataset.starValue);
+    star.classList.toggle('is-active', value <= rating);
+  });
+}
+
+function initRatingWidget(container) {
+  if (!container || container.dataset.ratingBound === 'true') {
+    return;
+  }
+  container.dataset.ratingBound = 'true';
+  const secretId = container.dataset.secretId;
+  let currentRating = getStoredRatings()[secretId] || 0;
+  updateStarVisuals(container, currentRating);
+
+  container.querySelectorAll('[data-star-value]').forEach((star) => {
+    const value = Number(star.dataset.starValue);
+    star.addEventListener('mouseenter', () => {
+      updateStarVisuals(container, value);
+    });
+    star.addEventListener('focus', () => {
+      updateStarVisuals(container, value);
+    });
+    star.addEventListener('click', () => {
+      currentRating = value;
+      saveRating(secretId, currentRating);
+      updateStarVisuals(container, currentRating);
+    });
+  });
+
+  container.addEventListener('mouseleave', () => {
+    updateStarVisuals(container, currentRating);
+  });
+}
+
+function initRatingWidgets(root) {
+  if (!root) {
+    return;
+  }
+  root.querySelectorAll('[data-secret-rating]').forEach(initRatingWidget);
 }
 
 function safeRedirectPath(target, fallback = '/') {
@@ -484,10 +547,19 @@ function renderSecrets(listEl, secrets) {
             <span>${escapeHTML(secret.category)}</span>
           </div>
           <div class="secret-content">${escapeHTML(secret.content)}</div>
+          <div class="secret-rating" data-secret-rating data-secret-id="${secret.id}">
+            ${[1, 2, 3, 4, 5]
+              .map(
+                (value) =>
+                  `<button type="button" class="secret-star" data-star-value="${value}" aria-label="Rate ${value} out of 5">⭐️</button>`
+              )
+              .join('')}
+          </div>
         </article>
       `
     )
     .join('');
+  initRatingWidgets(listEl);
 }
 
 function renderAdminUsers(container, users, currentUserId) {
@@ -762,15 +834,24 @@ function initReadPage() {
       randomArea.innerHTML = '';
       try {
         const secret = await fetchJSON('/api/random');
-        randomArea.innerHTML = `
+      randomArea.innerHTML = `
           <article class="secret-card">
             <div class="secret-meta">
               <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
               <span>${escapeHTML(secret.category)}</span>
             </div>
             <div class="secret-content">${escapeHTML(secret.content)}</div>
+            <div class="secret-rating" data-secret-rating data-secret-id="${secret.id}">
+              ${[1, 2, 3, 4, 5]
+                .map(
+                  (value) =>
+                    `<button type="button" class="secret-star" data-star-value="${value}" aria-label="Rate ${value} out of 5">⭐️</button>`
+                )
+                .join('')}
+            </div>
           </article>
         `;
+        initRatingWidgets(randomArea);
       } catch (err) {
         randomArea.innerHTML = `<p class="muted-text">${err.message || 'No secrets yet.'}</p>`;
       } finally {
@@ -784,6 +865,7 @@ function initReadPage() {
 document.addEventListener('DOMContentLoaded', () => {
   renderNav();
   updateUserContext();
+  initRatingWidgets(document.body);
   enforceAuthLinks();
 
   const page = document.body.dataset.page;

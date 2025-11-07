@@ -518,6 +518,37 @@ a {
   margin-top: 0.1em;
 }
 
+.secret-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.1rem;
+}
+
+.secret-star {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  color: rgba(226, 213, 255, 0.35);
+  transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.secret-star.is-active,
+.secret-star:hover,
+.secret-star:focus-visible {
+  color: #ffb1ff;
+  text-shadow: 0 0 12px rgba(189, 91, 255, 0.8), 0 0 24px rgba(95, 157, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.secret-star:focus-visible {
+  outline: 1px solid rgba(255, 177, 255, 0.6);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
 .hero-welcome {
   margin: 0;
   font-size: clamp(0.95rem, 1.6vw, 1.3rem);
