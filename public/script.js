@@ -1,6 +1,7 @@
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 const RATING_KEY = 'secret_ratings';
+const INTRO_SESSION_KEY = 'intro_intro_shown';
 
 function setAuth(token, user) {
   localStorage.setItem(TOKEN_KEY, token);
@@ -47,6 +48,22 @@ function saveRating(secretId, rating) {
   }
 }
 
+function hasSeenIntro() {
+  try {
+    return sessionStorage.getItem(INTRO_SESSION_KEY) === 'true';
+  } catch (err) {
+    return false;
+  }
+}
+
+function setIntroSeen() {
+  try {
+    sessionStorage.setItem(INTRO_SESSION_KEY, 'true');
+  } catch (err) {
+    // ignore storage issues
+  }
+}
+
 function updateStarVisuals(container, rating) {
   container.querySelectorAll('[data-star-value]').forEach((star) => {
     const value = Number(star.dataset.starValue);
@@ -88,6 +105,104 @@ function initRatingWidgets(root) {
     return;
   }
   root.querySelectorAll('[data-secret-rating]').forEach(initRatingWidget);
+}
+
+function initIntroOverlay() {
+  const overlay = document.getElementById('intro-overlay');
+  const video = document.getElementById('intro-video');
+  const skipButton = document.getElementById('intro-skip');
+
+  if (!overlay || !video || !skipButton) {
+    return;
+  }
+
+  const prefersReducedMotion = window.matchMedia
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
+  const teardownInstantly = () => {
+    overlay.classList.add('intro-hide');
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-intro-playing');
+  };
+
+  if (prefersReducedMotion || hasSeenIntro()) {
+    setIntroSeen();
+    teardownInstantly();
+    return;
+  }
+
+  let fallbackTimer;
+
+  const hideOverlay = () => {
+    if (!overlay || overlay.classList.contains('intro-hide')) {
+      return;
+    }
+    overlay.classList.add('intro-hide');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-intro-playing');
+    if (fallbackTimer) {
+      window.clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
+    try {
+      video.pause();
+    } catch (err) {
+      // ignore media pause errors
+    }
+    setIntroSeen();
+    window.setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 900);
+  };
+
+  overlay.classList.remove('intro-hide');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('is-intro-playing');
+
+  const attemptPlay = () => {
+    try {
+      const result = video.play();
+      if (result && typeof result.catch === 'function') {
+        result.catch(() => {
+          hideOverlay();
+        });
+      }
+    } catch (err) {
+      hideOverlay();
+    }
+  };
+
+  if (video.readyState >= 2) {
+    attemptPlay();
+  } else {
+    video.addEventListener(
+      'loadeddata',
+      () => {
+        attemptPlay();
+      },
+      { once: true }
+    );
+  }
+
+  fallbackTimer = window.setTimeout(() => {
+    hideOverlay();
+  }, 8000);
+
+  video.addEventListener('ended', hideOverlay, { once: true });
+  video.addEventListener('error', hideOverlay);
+  skipButton.addEventListener('click', hideOverlay);
+
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (document.hidden) {
+        hideOverlay();
+      }
+    },
+    { once: true }
+  );
 }
 
 function safeRedirectPath(target, fallback = '/') {
@@ -490,6 +605,15 @@ function initSharePage() {
       statusEl.classList.remove('form-success', 'form-error');
     }
 
+    if (!getToken()) {
+      if (statusEl) {
+        statusEl.textContent = 'Please sign in to share a secret.';
+        statusEl.classList.add('form-error');
+      }
+      window.location.replace('/login.html?next=/share.html');
+      return;
+    }
+
     const category = categorySelect.value;
     const content = form.content.value.trim();
 
@@ -863,6 +987,7 @@ function initReadPage() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initIntroOverlay();
   renderNav();
   updateUserContext();
   initRatingWidgets(document.body);
