@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Read secrets - mysecretisyoursecret.com</title>
-    <link rel="stylesheet" href="/style.css?v=20241103" />
+    <link rel="stylesheet" href="/style.css?v=20241118" />
     <script>
       (function enforceAuthEarly() {
         try {
@@ -17,7 +17,7 @@
         }
       })();
     </script>
-    <script src="/script.js" defer></script>
+    <script src="/app.js?v=20241118" defer></script>
   </head>
   <body data-page="read">
     <header class="top-bar">
@@ -39,10 +39,18 @@
         </div>
 
         <div class="read-controls">
-          <label for="category-filter" class="sr-only">Choose category</label>
-          <select id="category-filter" data-filter class="read-select"></select>
+          <div class="read-filter-group">
+            <label for="categoryFilter" class="sr-only">Choose category</label>
+            <select id="categoryFilter" data-filter class="read-select"></select>
+            <a id="shareCategoryBtn" class="btn neon gothic-share-btn" href="/share.html">Whisper Yours</a>
+          </div>
           <button class="btn outline" type="button" data-refresh>Refresh</button>
           <button class="btn neon" type="button" data-random-btn>Show A Random Secret</button>
+        </div>
+
+        <div class="category-share-cta" data-category-share-cta>
+          <p class="category-share-cta__text" data-category-share-label></p>
+          <button class="btn neon" type="button" data-category-share-btn>Share A Secret</button>
         </div>
 
         <div class="random-area" data-random-area></div>
@@ -51,6 +59,22 @@
       <section class="read-list-section">
         <h2>Newest Secrets</h2>
         <div class="secrets-list" data-secrets-list></div>
+        <div class="read-bottom-cta">
+          <a
+            id="bottomWhisperBtn"
+            class="btn neon gothic-whisper-btn"
+            data-bottom-whisper-btn
+            href="/share.html"
+          >Whisper Yours 🕯️</a>
+        </div>
+        <div class="read-drop-cta">
+          <a
+            class="btn drop-btn"
+            data-drop-btn
+            href="/share.html"
+            aria-label="Drop your own secret"
+          >Drop Yours…</a>
+        </div>
       </section>
     </main>
   </body>
