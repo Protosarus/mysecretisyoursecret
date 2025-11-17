@@ -159,19 +159,6 @@ function initIntroOverlay() {
   const attemptPlay = () => {
     try {
       const result = video.play();
-        // Force visible styles as a fallback in case CSS stacking or overlay hides it
-        try {
-          shareButton.style.display = 'block';
-          shareButton.style.width = '100%';
-          shareButton.style.position = 'relative';
-          shareButton.style.zIndex = '9999';
-          shareButton.style.boxShadow = '0 12px 40px rgba(185,130,255,0.45)';
-          shareButton.style.background = 'linear-gradient(90deg,#ff89c6,#b983ff)';
-          shareButton.style.color = '#060215';
-          shareButton.style.border = '2px solid rgba(185,130,255,0.6)';
-        } catch (e) {
-          console.warn('Could not apply inline styles to shareCategoryBtn', e);
-        }
       if (result && typeof result.catch === 'function') {
         result.catch(() => {
           hideOverlay();
@@ -878,12 +865,6 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
   const storedVotes = getTruthMeterVotesStore();
   listEl.innerHTML = secrets
     .map((secret) => {
-      const shareHref = secret.category
-        ? `/share.html?category=${encodeURIComponent(secret.category)}`
-        : '/share.html';
-      const sharePrompt = secret.category
-        ? `Add your whisper to the "${escapeHTML(secret.category)}" circle.`
-        : 'Add your whisper to this circle.';
       return `
         <article class="secret-card">
           <div class="secret-meta">
@@ -892,36 +873,11 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
           </div>
           <div class="secret-content">${escapeHTML(secret.content)}</div>
           ${truthMeterMarkup(secret, storedVotes)}
-          <div class="secret-share-cta">
-            <p class="secret-share-cta__text">${sharePrompt}</p>
-            <a class="btn outline secret-share-cta__btn" href="${shareHref}" data-secret-share-link>
-              Share Your Whisper
-            </a>
-          </div>
         </article>
       `;
     })
     .join('');
   initTruthMeters(listEl);
-
-  try {
-    if (activeCategoryValue) {
-      const categoryAttr = activeCategoryValue ? ` data-category="${escapeHTML(activeCategoryValue)}"` : '';
-      const label = `Share something new in "${escapeHTML(activeCategoryValue)}"`;
-      const ctaHTML = `
-        <div class="read-category-bottom-cta">
-          <p class="read-category-bottom-cta__label">${escapeHTML(label)}</p>
-          <button type="button" class="btn neon" data-category-bottom-share${categoryAttr} style="cursor: pointer; padding: 0.7rem 1.8rem; border-radius: 999px; font-weight: 600;">
-            Share Your Whisper
-          </button>
-        </div>
-      `;
-      listEl.insertAdjacentHTML('beforeend', ctaHTML);
-      console.log('[renderSecrets] CTA inserted with category:', activeCategoryValue, 'listEl:', listEl);
-    }
-  } catch (e) {
-    console.warn('Could not append category share CTA', e);
-  }
 }
 
 function renderAdminUsers(container, users, currentUserId) {
@@ -1149,10 +1105,7 @@ function initReadPage() {
   const listEl = document.querySelector('[data-secrets-list]');
   const randomBtn = document.querySelector('[data-random-btn]');
   const randomArea = document.querySelector('[data-random-area]');
-  const categoryShareCta = document.querySelector('[data-category-share-cta]');
-  const categoryShareLabel = document.querySelector('[data-category-share-label]');
-  const categoryShareBtns = Array.from(document.querySelectorAll('[data-category-share-btn]'));
-  const bottomWhisperBtn = document.querySelector('[data-bottom-whisper-btn]');
+  let dropYoursBtn = document.querySelector('[data-drop-btn]');
 
   const buildShareTarget = (value) => {
     if (value) {
@@ -1179,62 +1132,39 @@ function initReadPage() {
     return '';
   };
 
-  const syncBottomWhisperBtn = (value = getSelectedCategoryValue()) => {
-    if (!bottomWhisperBtn) {
+  const ensureDropYoursCta = () => {
+    if (dropYoursBtn) {
+      return dropYoursBtn;
+    }
+    const section = document.querySelector('.read-list-section');
+    if (!section) {
+      return null;
+    }
+    const container = document.createElement('div');
+    container.className = 'read-drop-cta';
+    const link = document.createElement('a');
+    link.className = 'btn drop-btn';
+    link.setAttribute('data-drop-btn', '');
+    link.setAttribute('aria-label', 'Drop your own secret');
+    link.textContent = 'Drop Yours…';
+    link.href = buildShareTarget();
+    container.appendChild(link);
+    section.appendChild(container);
+    dropYoursBtn = link;
+    return dropYoursBtn;
+  };
+
+  const syncDropYoursBtn = (value = getSelectedCategoryValue()) => {
+    dropYoursBtn = dropYoursBtn || ensureDropYoursCta();
+    if (!dropYoursBtn) {
       return;
     }
     const target = buildShareTarget(value);
-    bottomWhisperBtn.href = target;
-    bottomWhisperBtn.dataset.category = value || '';
+    dropYoursBtn.href = target;
+    dropYoursBtn.dataset.category = value || '';
   };
 
-  const syncPrimaryShareBtn = (value = getSelectedCategoryValue()) => {
-    const btn = document.getElementById('shareCategoryBtn');
-    if (btn) {
-      btn.href = buildShareTarget(value);
-    }
-  };
-
-  const syncShareButtons = (value = getSelectedCategoryValue()) => {
-    syncPrimaryShareBtn(value);
-    syncBottomWhisperBtn(value);
-  };
-
-  syncShareButtons();
-
-  // Ensure the main "Whisper Yours" button exists once and tracks the category value
-  function ensureShareCategoryBtn() {
-    const wrapper = document.querySelector('.read-filter-group');
-    if (!wrapper) {
-      return;
-    }
-
-    let btn = document.getElementById('shareCategoryBtn');
-    if (!btn) {
-      btn = document.createElement('a');
-      btn.id = 'shareCategoryBtn';
-      btn.className = 'btn neon gothic-share-btn';
-      btn.textContent = 'Whisper Yours';
-      wrapper.appendChild(btn);
-    }
-
-    syncShareButtons();
-  }
-
-  const updateCategoryShareCta = () => {
-    if (!categoryShareCta) {
-      return;
-    }
-    const value = getSelectedCategoryValue();
-    const label = value ? getSelectedCategoryLabel() || value : '';
-    const message = label
-      ? `Ready to add your whisper to the "${label}" circle?`
-      : 'Ready to add your whisper to this circle of secrets?';
-    categoryShareCta.classList.remove('hidden');
-    if (categoryShareLabel) {
-      categoryShareLabel.textContent = message;
-    }
-  };
+  syncDropYoursBtn();
 
   const buildEmptyState = () => {
     const value = getSelectedCategoryValue();
@@ -1261,27 +1191,6 @@ function initReadPage() {
         return;
       }
 
-      const bottomShareBtn = event.target.closest('[data-category-bottom-share]');
-      if (bottomShareBtn) {
-        const categoryValue = bottomShareBtn.dataset.category || '';
-        const target = categoryValue
-          ? `/share.html?category=${encodeURIComponent(categoryValue)}`
-          : '/share.html';
-        window.location.href = target;
-        return;
-      }
-    });
-  }
-
-  if (categoryShareBtns.length > 0) {
-    categoryShareBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const categoryValue = getSelectedCategoryValue();
-        const target = categoryValue
-          ? `/share.html?category=${encodeURIComponent(categoryValue)}`
-          : '/share.html';
-        window.location.href = target;
-      });
     });
   }
 
@@ -1289,20 +1198,21 @@ function initReadPage() {
     return fetchJSON('/api/categories')
       .then((categories) => {
         populateCategoryOptions(filterSelect, categories, true);
-        updateCategoryShareCta();
-        ensureShareCategoryBtn();
+        syncDropYoursBtn();
       })
       .catch(() => {
         renderSecrets(listEl, [], {
           message: 'Categories could not be loaded.',
           buttonText: 'Whisper Into The Void'
         }, getSelectedCategoryValue());
-        updateCategoryShareCta();
-        ensureShareCategoryBtn();
+        syncDropYoursBtn();
       });
   }
 
-  loadCategories().then(() => { loadSecrets(); ensureShareCategoryBtn(); });
+  loadCategories().then(() => {
+    loadSecrets();
+    syncDropYoursBtn();
+  });
 
   function loadSecrets() {
     const selected = filterSelect && filterSelect.value ? filterSelect.value : '';
@@ -1310,21 +1220,18 @@ function initReadPage() {
     fetchJSON(`/api/secrets${query}`)
       .then((secrets) => {
         renderSecrets(listEl, secrets, buildEmptyState(), getSelectedCategoryValue());
-        updateCategoryShareCta();
       })
       .catch((err) => {
         if (listEl) {
         listEl.innerHTML = `<p class="muted-text">${err.message || 'Secrets could not be retrieved.'}</p>`;
         }
-        updateCategoryShareCta();
       });
   }
 
   if (filterSelect) {
     filterSelect.addEventListener('change', () => {
       loadSecrets();
-      updateCategoryShareCta();
-      ensureShareCategoryBtn();
+      syncDropYoursBtn();
     });
   }
 
@@ -1369,27 +1276,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUserContext();
   initTruthMeters(document.body);
   enforceAuthLinks();
-
-  const categorySelect = document.getElementById('categoryFilter');
-  const shareButton = document.getElementById('shareCategoryBtn');
-  const bottomWhisperBtn = document.querySelector('[data-bottom-whisper-btn]');
-  if (categorySelect && (shareButton || bottomWhisperBtn)) {
-    const syncShareCategoryHref = () => {
-      const selected = categorySelect.value;
-      const target = selected
-        ? `/share.html?category=${encodeURIComponent(selected)}`
-        : '/share.html';
-      if (shareButton) {
-        shareButton.href = target;
-      }
-      if (bottomWhisperBtn) {
-        bottomWhisperBtn.href = target;
-        bottomWhisperBtn.dataset.category = selected || '';
-      }
-    };
-    categorySelect.addEventListener('change', syncShareCategoryHref);
-    syncShareCategoryHref();
-  }
 
   const page = document.body.dataset.page;
   switch (page) {

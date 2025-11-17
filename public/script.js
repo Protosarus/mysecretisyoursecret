@@ -1,6 +1,6 @@
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
-const RATING_KEY = 'secret_ratings';
+const TRUTH_METER_KEY = 'truth_meter_votes';
 const INTRO_SESSION_KEY = 'intro_intro_shown';
 
 function setAuth(token, user) {
@@ -29,20 +29,20 @@ function clearAuth() {
   localStorage.removeItem(USER_KEY);
 }
 
-function getStoredRatings() {
+function getTruthMeterVotesStore() {
   try {
-    const raw = localStorage.getItem(RATING_KEY);
+    const raw = localStorage.getItem(TRUTH_METER_KEY);
     return raw ? JSON.parse(raw) : {};
   } catch (err) {
     return {};
   }
 }
 
-function saveRating(secretId, rating) {
-  const current = getStoredRatings();
-  current[secretId] = rating;
+function saveTruthMeterVote(secretId, vote) {
+  const current = getTruthMeterVotesStore();
+  current[secretId] = vote;
   try {
-    localStorage.setItem(RATING_KEY, JSON.stringify(current));
+    localStorage.setItem(TRUTH_METER_KEY, JSON.stringify(current));
   } catch (err) {
     // ignore quota issues
   }
@@ -64,47 +64,42 @@ function setIntroSeen() {
   }
 }
 
-function updateStarVisuals(container, rating) {
-  container.querySelectorAll('[data-star-value]').forEach((star) => {
-    const value = Number(star.dataset.starValue);
-    star.classList.toggle('is-active', value <= rating);
-  });
+function formatPercentLabel(value) {
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const rounded = Math.round(safeValue * 10) / 10;
+  if (Number.isInteger(rounded)) {
+    return `${rounded}%`;
+  }
+  return `${rounded.toFixed(1)}%`;
 }
 
-function initRatingWidget(container) {
-  if (!container || container.dataset.ratingBound === 'true') {
-    return;
-  }
-  container.dataset.ratingBound = 'true';
-  const secretId = container.dataset.secretId;
-  let currentRating = getStoredRatings()[secretId] || 0;
-  updateStarVisuals(container, currentRating);
-
-  container.querySelectorAll('[data-star-value]').forEach((star) => {
-    const value = Number(star.dataset.starValue);
-    star.addEventListener('mouseenter', () => {
-      updateStarVisuals(container, value);
-    });
-    star.addEventListener('focus', () => {
-      updateStarVisuals(container, value);
-    });
-    star.addEventListener('click', () => {
-      currentRating = value;
-      saveRating(secretId, currentRating);
-      updateStarVisuals(container, currentRating);
-    });
-  });
-
-  container.addEventListener('mouseleave', () => {
-    updateStarVisuals(container, currentRating);
-  });
+function getTruthMeterStats(truthVotes = 0, lieVotes = 0) {
+  const truth = Number(truthVotes) || 0;
+  const lie = Number(lieVotes) || 0;
+  const totalVotes = truth + lie;
+  const truthPercentRaw = totalVotes === 0 ? 0 : (truth / totalVotes) * 100;
+  const liePercentRaw = totalVotes === 0 ? 0 : (lie / totalVotes) * 100;
+  const truthPercent = Math.round(truthPercentRaw * 10) / 10;
+  const liePercent = Math.round(liePercentRaw * 10) / 10;
+  return {
+    truthVotes: truth,
+    lieVotes: lie,
+    totalVotes,
+    truthPercent,
+    liePercent,
+    truthLabel: `${formatPercentLabel(truthPercent)} True`,
+    lieLabel: `${formatPercentLabel(liePercent)} Lie`
+  };
 }
 
-function initRatingWidgets(root) {
-  if (!root) {
-    return;
+function truthMeterStatusMessage(vote) {
+  if (vote === 'truth') {
+    return 'You marked this as true.';
   }
-  root.querySelectorAll('[data-secret-rating]').forEach(initRatingWidget);
+  if (vote === 'lie') {
+    return 'You marked this as a lie.';
+  }
+  return 'Trust your gut. One vote per secret.';
 }
 
 function initIntroOverlay() {
@@ -258,6 +253,181 @@ function genderIcon(gender) {
     return '♀';
   }
   return '⚧';
+}
+
+function truthMeterTotalLabel(totalVotes) {
+  if (!totalVotes) {
+    return 'Awaiting first vote';
+  }
+  return `${totalVotes} vote${totalVotes === 1 ? '' : 's'}`;
+}
+
+function truthMeterMarkup(secret, storedVotes = null) {
+  const stats = getTruthMeterStats(secret.truthVotes, secret.lieVotes);
+  const voteMap = storedVotes || getTruthMeterVotesStore();
+  const recordedVote = voteMap ? voteMap[secret.id] : null;
+  const truthSelected = recordedVote === 'truth' ? ' is-selected' : '';
+  const lieSelected = recordedVote === 'lie' ? ' is-selected' : '';
+  const disableAttr = recordedVote ? 'disabled' : '';
+  const blockOpenClass = recordedVote ? ' is-open' : '';
+  const ariaExpanded = recordedVote ? 'true' : 'false';
+  return `
+    <div class="truth-meter-block${blockOpenClass}" data-truth-block>
+      <button
+        type="button"
+        class="truth-meter-toggle"
+        data-truth-toggle
+        aria-expanded="${ariaExpanded}"
+      >
+        <span class="truth-meter-toggle__label">Truth Meter</span>
+        <span class="truth-meter-toggle__chevron" aria-hidden="true"></span>
+      </button>
+      <div class="truth-meter" data-truth-meter data-secret-id="${secret.id}">
+        <div class="truth-meter__header">
+          <span>Truth Meter</span>
+          <span class="truth-meter__total" data-truth-total>${escapeHTML(truthMeterTotalLabel(stats.totalVotes))}</span>
+        </div>
+        <div class="truth-meter__bar" aria-hidden="true">
+          <div class="truth-meter__fill truth" style="width: ${stats.truthPercent}%;"></div>
+          <div class="truth-meter__fill lie" style="width: ${stats.liePercent}%;"></div>
+        </div>
+        <div class="truth-meter__stats">
+          <span data-truth-value>${escapeHTML(stats.truthLabel)}</span>
+          <span class="truth-meter__divider">/</span>
+          <span data-lie-value>${escapeHTML(stats.lieLabel)}</span>
+        </div>
+        <div class="truth-meter__actions">
+          <button type="button" class="truth-button truth${truthSelected}" data-truth-vote="truth" ${disableAttr}>Feels True</button>
+          <button type="button" class="truth-button lie${lieSelected}" data-truth-vote="lie" ${disableAttr}>Feels Like A Lie</button>
+        </div>
+        <p class="truth-meter__hint" data-truth-hint>${escapeHTML(truthMeterStatusMessage(recordedVote))}</p>
+      </div>
+    </div>
+  `;
+}
+
+function updateTruthMeterDisplay(meter, stats) {
+  if (!meter || !stats) {
+    return;
+  }
+  const truthFill = meter.querySelector('.truth-meter__fill.truth');
+  const lieFill = meter.querySelector('.truth-meter__fill.lie');
+  const truthValue = meter.querySelector('[data-truth-value]');
+  const lieValue = meter.querySelector('[data-lie-value]');
+  const total = meter.querySelector('[data-truth-total]');
+
+  if (truthFill) {
+    truthFill.style.width = `${stats.truthPercent}%`;
+  }
+  if (lieFill) {
+    lieFill.style.width = `${stats.liePercent}%`;
+  }
+  if (truthValue) {
+    truthValue.textContent = stats.truthLabel;
+  }
+  if (lieValue) {
+    lieValue.textContent = stats.lieLabel;
+  }
+  if (total) {
+    total.textContent = truthMeterTotalLabel(stats.totalVotes);
+  }
+}
+
+function initTruthMeterToggle(block) {
+  if (!block || block.dataset.truthToggleBound === 'true') {
+    return;
+  }
+  const toggle = block.querySelector('[data-truth-toggle]');
+  if (!toggle) {
+    return;
+  }
+  block.dataset.truthToggleBound = 'true';
+  const syncState = () => {
+    const expanded = block.classList.contains('is-open');
+    toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  };
+  syncState();
+  toggle.addEventListener('click', () => {
+    block.classList.toggle('is-open');
+    syncState();
+  });
+}
+
+function initTruthMeter(container) {
+  if (!container || container.dataset.truthBound === 'true') {
+    return;
+  }
+  container.dataset.truthBound = 'true';
+  const secretId = container.dataset.secretId;
+  if (!secretId) {
+    return;
+  }
+  const buttons = Array.from(container.querySelectorAll('[data-truth-vote]'));
+  const hintNode = container.querySelector('[data-truth-hint]');
+  let lockedVote = (getTruthMeterVotesStore()[secretId] || '').toLowerCase();
+
+  const setHint = (message) => {
+    if (hintNode) {
+      hintNode.textContent = message;
+    }
+  };
+
+  const highlightVote = (vote) => {
+    buttons.forEach((btn) => {
+      btn.classList.toggle('is-selected', Boolean(vote) && btn.dataset.truthVote === vote);
+    });
+  };
+
+  const setButtonsDisabled = (disabled) => {
+    buttons.forEach((btn) => {
+      btn.disabled = disabled;
+    });
+  };
+
+  if (lockedVote) {
+    highlightVote(lockedVote);
+    setButtonsDisabled(true);
+    setHint(truthMeterStatusMessage(lockedVote));
+  }
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (lockedVote || button.disabled) {
+        return;
+      }
+      const vote = button.dataset.truthVote;
+      if (!vote) {
+        return;
+      }
+      setButtonsDisabled(true);
+      setHint('Sending your vibe...');
+      try {
+        const payload = await fetchJSON(`/api/secrets/${encodeURIComponent(secretId)}/truth-meter`, {
+          method: 'POST',
+          body: { vote }
+        });
+        const stats = getTruthMeterStats(payload.truthVotes, payload.lieVotes);
+        updateTruthMeterDisplay(container, stats);
+        saveTruthMeterVote(secretId, vote);
+        lockedVote = vote;
+        highlightVote(vote);
+        setHint(truthMeterStatusMessage(vote));
+      } catch (err) {
+        if (!lockedVote) {
+          setButtonsDisabled(false);
+        }
+        setHint((err && err.message) || 'Vote failed. Try again.');
+      }
+    });
+  });
+}
+
+function initTruthMeters(root) {
+  if (!root) {
+    return;
+  }
+  root.querySelectorAll('[data-truth-block]').forEach(initTruthMeterToggle);
+  root.querySelectorAll('[data-truth-meter]').forEach(initTruthMeter);
 }
 
 async function fetchJSON(url, options = {}) {
@@ -424,8 +594,10 @@ function initIndexPage() {
                 <span>${escapeHTML(secret.category)}</span>
               </div>
               <div class="secret-content">${escapeHTML(secret.content)}</div>
+              ${truthMeterMarkup(secret, getTruthMeterVotesStore())}
             </div>
           `;
+          initTruthMeters(randomOutput);
           randomContainer.classList.remove('hidden');
         } catch (err) {
           randomOutput.innerHTML = `<p class="muted-text">No secrets yet.</p>`;
@@ -581,10 +753,20 @@ function initSharePage() {
   const categorySelect = document.querySelector('select[name="category"]');
   const form = document.querySelector('form');
   const statusEl = document.querySelector('[data-share-status]');
+  let preselectedCategory = '';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    preselectedCategory = params.get('category') || '';
+  } catch (err) {
+    preselectedCategory = '';
+  }
 
   fetchJSON('/api/categories')
     .then((categories) => {
       populateCategoryOptions(categorySelect, categories);
+      if (preselectedCategory && categories.includes(preselectedCategory) && categorySelect) {
+        categorySelect.value = preselectedCategory;
+      }
     })
     .catch(() => {
       if (statusEl) {
@@ -652,16 +834,35 @@ function initSharePage() {
   });
 }
 
-function renderSecrets(listEl, secrets) {
+function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
   if (!listEl) {
     return;
   }
 
+  // Use emptyState.categoryValue if passed, otherwise use the parameter
+  const activeCategoryValue = (emptyState && emptyState.categoryValue) || categoryValue || '';
+
   if (!secrets || secrets.length === 0) {
-    listEl.innerHTML = '<p class="muted-text">No whispers yet. Be the first to leave one.</p>';
+    const message =
+      (emptyState && emptyState.message) || 'No whispers yet. Be the first to leave one.';
+    const buttonText = emptyState && emptyState.buttonText;
+    if (buttonText) {
+      const safeMessage = escapeHTML(message);
+      const safeButton = escapeHTML(buttonText);
+      const categoryAttr = activeCategoryValue ? ` data-empty-category="${escapeHTML(activeCategoryValue)}"` : '';
+      listEl.innerHTML = `
+        <div class="read-empty-cta">
+          <p class="read-empty-cta__label">${safeMessage}</p>
+          <button class="btn neon" type="button" data-empty-cta-btn${categoryAttr}>${safeButton}</button>
+        </div>
+      `;
+    } else {
+      listEl.innerHTML = `<p class="muted-text">${escapeHTML(message)}</p>`;
+    }
     return;
   }
 
+  const storedVotes = getTruthMeterVotesStore();
   listEl.innerHTML = secrets
     .map(
       (secret) => `
@@ -671,19 +872,13 @@ function renderSecrets(listEl, secrets) {
             <span>${escapeHTML(secret.category)}</span>
           </div>
           <div class="secret-content">${escapeHTML(secret.content)}</div>
-          <div class="secret-rating" data-secret-rating data-secret-id="${secret.id}">
-            ${[1, 2, 3, 4, 5]
-              .map(
-                (value) =>
-                  `<button type="button" class="secret-star" data-star-value="${value}" aria-label="Rate ${value} out of 5">⭐️</button>`
-              )
-              .join('')}
-          </div>
+          ${truthMeterMarkup(secret, storedVotes)}
         </article>
       `
     )
     .join('');
-  initRatingWidgets(listEl);
+  initTruthMeters(listEl);
+
 }
 
 function renderAdminUsers(container, users, currentUserId) {
@@ -911,25 +1106,117 @@ function initReadPage() {
   const listEl = document.querySelector('[data-secrets-list]');
   const randomBtn = document.querySelector('[data-random-btn]');
   const randomArea = document.querySelector('[data-random-area]');
+  let dropYoursBtn = document.querySelector('[data-drop-btn]');
+
+  const getSelectedCategoryValue = () => {
+    if (!filterSelect) {
+      return '';
+    }
+    return filterSelect.value || '';
+  };
+
+  const buildShareTarget = (value = getSelectedCategoryValue()) => {
+    return value ? `/share.html?category=${encodeURIComponent(value)}` : '/share.html';
+  };
+
+  const getSelectedCategoryLabel = () => {
+    if (!filterSelect) {
+      return '';
+    }
+    const option = filterSelect.selectedOptions && filterSelect.selectedOptions[0];
+    if (option && option.value) {
+      return option.textContent || option.value;
+    }
+    return '';
+  };
+
+  const ensureDropYoursCta = () => {
+    if (dropYoursBtn) {
+      return dropYoursBtn;
+    }
+    const section = document.querySelector('.read-list-section');
+    if (!section) {
+      return null;
+    }
+    const container = document.createElement('div');
+    container.className = 'read-drop-cta';
+    const link = document.createElement('a');
+    link.className = 'btn drop-btn';
+    link.setAttribute('data-drop-btn', '');
+    link.setAttribute('aria-label', 'Drop your own secret');
+    link.textContent = 'Drop Yours…';
+    link.href = buildShareTarget();
+    container.appendChild(link);
+    section.appendChild(container);
+    dropYoursBtn = link;
+    return dropYoursBtn;
+  };
+
+  const syncDropYoursBtn = (value = getSelectedCategoryValue()) => {
+    dropYoursBtn = dropYoursBtn || ensureDropYoursCta();
+    if (!dropYoursBtn) {
+      return;
+    }
+    const target = buildShareTarget(value);
+    dropYoursBtn.href = target;
+    dropYoursBtn.dataset.category = value || '';
+  };
+  syncDropYoursBtn();
+
+  const buildEmptyState = () => {
+    const value = getSelectedCategoryValue();
+    const label = getSelectedCategoryLabel();
+    const message = label
+      ? `No whispers echo within the "${label}" circle yet. Will yours break the silence?`
+      : 'No whispers echo within this realm yet. Will yours break the silence?';
+    return {
+      message,
+      buttonText: 'Whisper Into The Void',
+      categoryValue: value
+    };
+  };
+
+  if (listEl) {
+    listEl.addEventListener('click', (event) => {
+      const emptyBtn = event.target.closest('[data-empty-cta-btn]');
+      if (emptyBtn) {
+        const categoryValue = emptyBtn.dataset.emptyCategory || '';
+        const target = categoryValue
+          ? `/share.html?category=${encodeURIComponent(categoryValue)}`
+          : '/share.html';
+        window.location.href = target;
+        return;
+      }
+
+    });
+  }
 
   function loadCategories() {
     return fetchJSON('/api/categories')
       .then((categories) => {
         populateCategoryOptions(filterSelect, categories, true);
+        syncDropYoursBtn();
       })
       .catch(() => {
-        renderSecrets(listEl, []);
+        renderSecrets(listEl, [], {
+          message: 'Categories could not be loaded.',
+          buttonText: 'Whisper Into The Void'
+        }, getSelectedCategoryValue());
+        syncDropYoursBtn();
       });
   }
 
-  loadCategories().then(() => loadSecrets());
+  loadCategories().then(() => {
+    loadSecrets();
+    syncDropYoursBtn();
+  });
 
   function loadSecrets() {
     const selected = filterSelect && filterSelect.value ? filterSelect.value : '';
     const query = selected ? `?category=${encodeURIComponent(selected)}` : '';
     fetchJSON(`/api/secrets${query}`)
       .then((secrets) => {
-        renderSecrets(listEl, secrets);
+        renderSecrets(listEl, secrets, buildEmptyState(), getSelectedCategoryValue());
       })
       .catch((err) => {
         if (listEl) {
@@ -941,6 +1228,7 @@ function initReadPage() {
   if (filterSelect) {
     filterSelect.addEventListener('change', () => {
       loadSecrets();
+      syncDropYoursBtn();
     });
   }
 
@@ -958,24 +1246,17 @@ function initReadPage() {
       randomArea.innerHTML = '';
       try {
         const secret = await fetchJSON('/api/random');
-      randomArea.innerHTML = `
+        randomArea.innerHTML = `
           <article class="secret-card">
             <div class="secret-meta">
               <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
               <span>${escapeHTML(secret.category)}</span>
             </div>
             <div class="secret-content">${escapeHTML(secret.content)}</div>
-            <div class="secret-rating" data-secret-rating data-secret-id="${secret.id}">
-              ${[1, 2, 3, 4, 5]
-                .map(
-                  (value) =>
-                    `<button type="button" class="secret-star" data-star-value="${value}" aria-label="Rate ${value} out of 5">⭐️</button>`
-                )
-                .join('')}
-            </div>
+            ${truthMeterMarkup(secret, getTruthMeterVotesStore())}
           </article>
         `;
-        initRatingWidgets(randomArea);
+        initTruthMeters(randomArea);
       } catch (err) {
         randomArea.innerHTML = `<p class="muted-text">${err.message || 'No secrets yet.'}</p>`;
       } finally {
@@ -990,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initIntroOverlay();
   renderNav();
   updateUserContext();
-  initRatingWidgets(document.body);
+  initTruthMeters(document.body);
   enforceAuthLinks();
 
   const page = document.body.dataset.page;
