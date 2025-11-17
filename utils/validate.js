@@ -1,4 +1,24 @@
-const CATEGORIES = ['desire', 'family', 'work', 'health', 'other'];
+const CATEGORIES = [
+  'Workplace',
+  'School',
+  'Family',
+  'Friends',
+  'Relationships',
+  'Crushes',
+  'Regrets',
+  'Dark Thoughts',
+  'Guilty Pleasures',
+  'Unspoken Truths',
+  "Things I Can't Tell Anyone",
+  'To The Grave',
+  'Drama & Chaos',
+  'Embarrassing Moments',
+  'Petty Crimes',
+  'Secret Confessions',
+  'Forbidden Thoughts',
+  'Shadow Desires',
+  'The Void'
+];
 
 function isString(value) {
   return typeof value === 'string';
