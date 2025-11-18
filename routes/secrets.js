@@ -10,7 +10,8 @@ const {
 const {
   insertSecret,
   listSecrets,
-  getRandomSecret
+  getRandomSecret,
+  incrementTruthinessVote
 } = require('../db/database');
 
 const router = express.Router();
@@ -103,6 +104,51 @@ router.get('/random', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ message: 'Random secret could not be retrieved.' });
   }
+});
+
+async function handleTruthMeterVote(secretIdRaw, voteRaw, res) {
+  const secretId = Number.parseInt(secretIdRaw, 10);
+  if (!Number.isInteger(secretId) || secretId <= 0) {
+    return res.status(400).json({ message: 'Invalid secret.' });
+  }
+
+  const vote = typeof voteRaw === 'string' ? voteRaw.toLowerCase() : '';
+  if (vote !== 'truth' && vote !== 'lie') {
+    return res.status(400).json({ message: 'Invalid vote.' });
+  }
+
+  try {
+    const tallies = await incrementTruthinessVote(secretId, vote);
+    if (!tallies) {
+      return res.status(404).json({ message: 'Secret not found.' });
+    }
+
+    const truthVotes = Number(tallies.truthVotes) || 0;
+    const lieVotes = Number(tallies.lieVotes) || 0;
+    const total = truthVotes + lieVotes;
+    const truthPercent = total === 0 ? 0 : Math.round((truthVotes / total) * 1000) / 10;
+    const liePercent = total === 0 ? 0 : Math.round((lieVotes / total) * 1000) / 10;
+
+    return res.json({
+      secretId,
+      vote,
+      truthVotes,
+      lieVotes,
+      truthPercent,
+      liePercent
+    });
+  } catch (err) {
+    return res.status(500).json({ message: 'Unable to record vote.' });
+  }
+}
+
+router.post('/secrets/:id/truth-meter', async (req, res) => {
+  return handleTruthMeterVote(req.params.id, req.body && req.body.vote, res);
+});
+
+router.post('/truth-meter', async (req, res) => {
+  const { secretId, vote } = req.body || {};
+  return handleTruthMeterVote(secretId, vote, res);
 });
 
 module.exports = router;

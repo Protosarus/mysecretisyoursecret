@@ -402,9 +402,9 @@ function initTruthMeter(container) {
       setButtonsDisabled(true);
       setHint('Sending your vibe...');
       try {
-        const payload = await fetchJSON(`/api/secrets/${encodeURIComponent(secretId)}/truth-meter`, {
+        const payload = await fetchJSON('/api/truth-meter', {
           method: 'POST',
-          body: { vote }
+          body: { secretId, vote }
         });
         const stats = getTruthMeterStats(payload.truthVotes, payload.lieVotes);
         updateTruthMeterDisplay(container, stats);
