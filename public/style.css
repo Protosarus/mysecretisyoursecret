@@ -351,26 +351,6 @@ a {
   margin: 0;
 }
 
-.read-empty-cta {
-  margin-top: 1rem;
-  padding: 1.2rem 1.4rem;
-  border-radius: 20px;
-  border: 1px solid rgba(154, 123, 255, 0.25);
-  background: radial-gradient(circle at top left, rgba(92, 78, 211, 0.18), rgba(12, 8, 23, 0.9));
-  box-shadow: 0 18px 40px rgba(6, 5, 15, 0.55);
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.read-empty-cta__label {
-  margin: 0;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  color: rgba(229, 216, 255, 0.9);
-  font-family: 'Playfair Display', serif;
-}
-
 .random-area {
   margin-top: 2rem;
 }

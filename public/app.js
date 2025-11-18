@@ -845,20 +845,7 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
   if (!secrets || secrets.length === 0) {
     const message =
       (emptyState && emptyState.message) || 'No whispers yet. Be the first to leave one.';
-    const buttonText = emptyState && emptyState.buttonText;
-    if (buttonText) {
-      const safeMessage = escapeHTML(message);
-      const safeButton = escapeHTML(buttonText);
-      const categoryAttr = activeCategoryValue ? ` data-empty-category="${escapeHTML(activeCategoryValue)}"` : '';
-      listEl.innerHTML = `
-        <div class="read-empty-cta">
-          <p class="read-empty-cta__label">${safeMessage}</p>
-          <button class="btn neon" type="button" data-empty-cta-btn${categoryAttr}>${safeButton}</button>
-        </div>
-      `;
-    } else {
-      listEl.innerHTML = `<p class="muted-text">${escapeHTML(message)}</p>`;
-    }
+    listEl.innerHTML = `<p class="muted-text">${escapeHTML(message)}</p>`;
     return;
   }
 
@@ -1179,20 +1166,7 @@ function initReadPage() {
     };
   };
 
-  if (listEl) {
-    listEl.addEventListener('click', (event) => {
-      const emptyBtn = event.target.closest('[data-empty-cta-btn]');
-      if (emptyBtn) {
-        const categoryValue = emptyBtn.dataset.emptyCategory || '';
-        const target = categoryValue
-          ? `/share.html?category=${encodeURIComponent(categoryValue)}`
-          : '/share.html';
-        window.location.href = target;
-        return;
-      }
-
-    });
-  }
+  // No CTA button to wire up when the list is empty
 
   function loadCategories() {
     return fetchJSON('/api/categories')
