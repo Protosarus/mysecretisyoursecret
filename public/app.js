@@ -885,20 +885,79 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
   listEl.innerHTML = secrets
     .map((secret) => {
       return `
-        <article class="secret-card">
+        <article class="secret-card" data-secret-id="${secret.id}">
           <div class="secret-meta">
             <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
             <span>${escapeHTML(secret.category)}</span>
           </div>
           <div class="secret-content">${escapeHTML(secret.content)}</div>
-          ${truthMeterMarkup(secret, storedVotes)}
+          <div class="truth-meter" data-truth-meter>
+             <div>
+                💡 Truth Meter: <span data-truth-score>0</span>/5
+             </div>
+             <div class="truth-progress">
+                <div class="truth-progress-fill" data-truth-fill></div>
+             </div>
+             <button class="btn neon small" data-truth-btn>Rate Truth</button>
+             <div class="truth-particles" data-truth-particles></div>
+          </div>
         </article>
       `;
     })
     .join('');
-  localStorage.setItem("read_count", (Number(localStorage.getItem("read_count")||0) + secrets.length));
-  updateAccessStatusCard();
-  initTruthMeters(listEl);
+    localStorage.setItem("read_count", (Number(localStorage.getItem("read_count")||0) + secrets.length));
+    updateAccessStatusCard();
+    // Truth Meter voting logic
+    setTimeout(() => {
+    document.querySelectorAll('[data-truth-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('[data-secret-id]');
+        const secretId = card.dataset.secretId;
+
+        const currentUserId = localStorage.getItem('logged_user_id');
+        if (!currentUserId) return;
+
+        // Load votes
+        let truthVotes = JSON.parse(localStorage.getItem('truthVotes') || "{}");
+
+        // Prevent duplicate voting
+        if (truthVotes[secretId] && truthVotes[secretId].user === currentUserId) {
+          btn.disabled = true;
+          btn.textContent = "Already rated ✔";
+          return;
+        }
+
+        // Generate vote (1–5)
+        const vote = Math.floor(Math.random() * 5) + 1;
+
+        // Save
+        truthVotes[secretId] = { user: currentUserId, vote };
+        localStorage.setItem('truthVotes', JSON.stringify(truthVotes));
+
+        // Update UI
+        const scoreEl = card.querySelector('[data-truth-score]');
+        const fillEl = card.querySelector('[data-truth-fill]');
+        const meter = card.querySelector('[data-truth-meter]');
+
+        scoreEl.textContent = vote;
+        fillEl.style.width = `${(vote / 5) * 100}%`;
+
+        // FX
+        meter.classList.add('truth-voted');
+
+        const particles = card.querySelector('[data-truth-particles]');
+        for (let i = 0; i < 6; i++) {
+          const p = document.createElement('span');
+          p.style.left = (10 + Math.random() * 80) + "%";
+          particles.appendChild(p);
+          setTimeout(() => p.remove(), 1300);
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Rated ✔";
+      });
+    });
+    }, 0);
 }
 
 function renderAdminUsers(container, users, currentUserId) {
