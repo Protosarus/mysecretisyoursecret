@@ -33,6 +33,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_secrets_category ON secrets(category);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS truth_meter_votes(
+    secret_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    vote_type TEXT NOT NULL CHECK(vote_type IN ('truth','lie')),
+    PRIMARY KEY(secret_id, user_id),
+    FOREIGN KEY(secret_id) REFERENCES secrets(id),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  );
+`);
+
 function safeAddColumn(sql, label) {
   try {
     db.exec(sql);
@@ -231,12 +242,25 @@ function listAllSecrets(limit = 200) {
   return wrapSync(() => listAllSecretsStmt.all(limit));
 }
 
-function incrementTruthinessVote(secretId, voteType) {
+function incrementTruthinessVote(secretId, voteType, userId) {
   return wrapSync(() => {
     const tallies = selectVoteTalliesStmt.get(secretId);
     if (!tallies) {
       return null;
     }
+    
+    // Check if user already voted (userId provided)
+    if (userId) {
+      const existingVote = db.prepare(
+        'SELECT * FROM truth_meter_votes WHERE secret_id = ? AND user_id = ?'
+      ).get(secretId, userId);
+      
+      if (existingVote) {
+        // User already voted, don't count again
+        return { truthVotes: tallies.truthVotes, lieVotes: tallies.lieVotes };
+      }
+    }
+    
     let truthVotes = Number(tallies.truthVotes) || 0;
     let lieVotes = Number(tallies.lieVotes) || 0;
     if (voteType === 'truth') {
@@ -244,6 +268,14 @@ function incrementTruthinessVote(secretId, voteType) {
     } else {
       lieVotes += 1;
     }
+    
+    // Record user vote if userId provided
+    if (userId) {
+      db.prepare(
+        'INSERT OR IGNORE INTO truth_meter_votes (secret_id, user_id, vote_type) VALUES (?, ?, ?)'
+      ).run(secretId, userId, voteType);
+    }
+    
     const result = updateVoteTalliesStmt.run(truthVotes, lieVotes, secretId);
     if (!result.changes) {
       return null;

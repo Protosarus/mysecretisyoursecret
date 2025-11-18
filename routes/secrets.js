@@ -106,7 +106,7 @@ router.get('/random', async (req, res) => {
   }
 });
 
-async function handleTruthMeterVote(secretIdRaw, voteRaw, res) {
+async function handleTruthMeterVote(secretIdRaw, voteRaw, res, userId) {
   const secretId = Number.parseInt(secretIdRaw, 10);
   if (!Number.isInteger(secretId) || secretId <= 0) {
     return res.status(400).json({ message: 'Invalid secret.' });
@@ -118,7 +118,7 @@ async function handleTruthMeterVote(secretIdRaw, voteRaw, res) {
   }
 
   try {
-    const tallies = await incrementTruthinessVote(secretId, vote);
+    const tallies = await incrementTruthinessVote(secretId, vote, userId);
     if (!tallies) {
       return res.status(404).json({ message: 'Secret not found.' });
     }
@@ -143,12 +143,14 @@ async function handleTruthMeterVote(secretIdRaw, voteRaw, res) {
 }
 
 router.post('/secrets/:id/truth-meter', async (req, res) => {
-  return handleTruthMeterVote(req.params.id, req.body && req.body.vote, res);
+  const userId = req.user ? req.user.id : null;
+  return handleTruthMeterVote(req.params.id, req.body && req.body.vote, res, userId);
 });
 
 router.post('/truth-meter', async (req, res) => {
   const { secretId, vote } = req.body || {};
-  return handleTruthMeterVote(secretId, vote, res);
+  const userId = req.user ? req.user.id : null;
+  return handleTruthMeterVote(secretId, vote, res, userId);
 });
 
 module.exports = router;

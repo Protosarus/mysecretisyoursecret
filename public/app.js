@@ -4,8 +4,19 @@ const TRUTH_METER_KEY = 'truth_meter_votes';
 const INTRO_SESSION_KEY = 'intro_intro_shown';
 
 function setAuth(token, user) {
+  const oldUserId = localStorage.getItem('logged_user_id');
+  const newUserId = user ? user.id : null;
+  
+  // If user ID changed, clear old votes
+  if (oldUserId && oldUserId !== newUserId) {
+    localStorage.removeItem(TRUTH_METER_KEY);
+  }
+  
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  if (newUserId) {
+    localStorage.setItem('logged_user_id', newUserId);
+  }
 }
 
 function getToken() {
@@ -40,7 +51,9 @@ function getTruthMeterVotesStore() {
 
 function saveTruthMeterVote(secretId, vote) {
   const current = getTruthMeterVotesStore();
-  current[secretId] = vote;
+  const user = getUser();
+  const userId = user ? user.id : null;
+  current[secretId] = { user: userId, vote: vote };
   try {
     localStorage.setItem(TRUTH_METER_KEY, JSON.stringify(current));
   } catch (err) {
@@ -265,7 +278,12 @@ function truthMeterTotalLabel(totalVotes) {
 function truthMeterMarkup(secret, storedVotes = null) {
   const stats = getTruthMeterStats(secret.truthVotes, secret.lieVotes);
   const voteMap = storedVotes || getTruthMeterVotesStore();
-  const recordedVote = voteMap ? voteMap[secret.id] : null;
+  const voteEntry = voteMap ? voteMap[secret.id] : null;
+  const user = getUser();
+  const currentUserId = user ? user.id : null;
+  
+  // Check if current user already voted
+  const recordedVote = (voteEntry && voteEntry.user === currentUserId) ? voteEntry.vote : null;
   const truthSelected = recordedVote === 'truth' ? ' is-selected' : '';
   const lieSelected = recordedVote === 'lie' ? ' is-selected' : '';
   const disableAttr = recordedVote ? 'disabled' : '';
@@ -364,7 +382,11 @@ function initTruthMeter(container) {
   }
   const buttons = Array.from(container.querySelectorAll('[data-truth-vote]'));
   const hintNode = container.querySelector('[data-truth-hint]');
-  let lockedVote = (getTruthMeterVotesStore()[secretId] || '').toLowerCase();
+  const voteMap = getTruthMeterVotesStore();
+  const voteEntry = voteMap[secretId];
+  const user = getUser();
+  const currentUserId = user ? user.id : null;
+  const lockedVote = (voteEntry && voteEntry.user === currentUserId) ? (voteEntry.vote || '').toLowerCase() : '';
 
   const setHint = (message) => {
     if (hintNode) {
