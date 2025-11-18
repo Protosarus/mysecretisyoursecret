@@ -658,15 +658,15 @@ function initIndexPage() {
   const user = getUser();
   const loggedInSection = document.querySelector('[data-logged-in]');
   const loggedOutSection = document.querySelector('[data-logged-out]');
-  const welcome = document.querySelector('[data-welcome]');
+    const usernameSpan = document.querySelector('.username');
   const randomBtn = document.querySelector('[data-random-btn]');
   const randomOutput = document.querySelector('[data-random-output]');
   const randomContainer = document.querySelector('[data-random-container]');
 
   if (user) {
-    if (welcome) {
-      welcome.innerHTML = `Welcome back, ${escapeHTML(user.nickname)} ${genderIcon(user.gender)}`;
-    }
+      if (usernameSpan && user) {
+        usernameSpan.innerHTML = `${escapeHTML(user.nickname)} ${genderIcon(user.gender)}`;
+      }
     if (loggedInSection) {
       loggedInSection.classList.remove('hidden');
     }
@@ -818,7 +818,7 @@ function initLoginPage() {
         body: { nickname, password }
       });
       setAuth(payload.token, payload.user);
-      window.location.replace(redirectTarget);
+      window.location.replace('/index.html');
     } catch (err) {
       if (errorEl) {
         errorEl.textContent = err.message || 'Sign in failed.';
