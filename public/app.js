@@ -882,29 +882,18 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
   }
 
   const storedVotes = getTruthMeterVotesStore();
-  listEl.innerHTML = secrets
-    .map((secret) => {
-      return `
-        <article class="secret-card" data-secret-id="${secret.id}">
-          <div class="secret-meta">
-            <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
-            <span>${escapeHTML(secret.category)}</span>
-          </div>
-          <div class="secret-content">${escapeHTML(secret.content)}</div>
-          <div class="truth-meter" data-truth-meter>
-             <div>
-                💡 Truth Meter: <span data-truth-score>0</span>/5
-             </div>
-             <div class="truth-progress">
-                <div class="truth-progress-fill" data-truth-fill></div>
-             </div>
-             <button class="btn neon small" data-truth-btn>Rate Truth</button>
-             <div class="truth-particles" data-truth-particles></div>
-          </div>
-        </article>
-      `;
-    })
-    .join('');
+        listEl.innerHTML = secrets.map((secret) => {
+          return `
+            <article class="secret-card" data-secret-id="${secret.id}">
+              <div class="secret-meta">
+                <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
+                <span>${escapeHTML(secret.category)}</span>
+              </div>
+              <div class="secret-content">${escapeHTML(secret.content)}</div>
+              ${truthMeterMarkup(secret, storedVotes)}
+            </article>
+          `;
+        }).join('');
     localStorage.setItem("read_count", (Number(localStorage.getItem("read_count")||0) + secrets.length));
     updateAccessStatusCard();
     // Truth Meter voting logic
