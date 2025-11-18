@@ -1297,3 +1297,49 @@ textarea {
     text-shadow: 0 0 35px rgba(255, 150, 230, 0.9), 0 0 70px rgba(185, 130, 255, 0.7);
   }
 }
+
+.access-status-card {
+  width: 260px;
+  padding: 1.4rem 1.6rem;
+  margin-left: 1.2rem;
+  background: rgba(20, 10, 30, 0.45);
+  border: 1px solid rgba(180, 120, 255, 0.3);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 22px rgba(185,130,255,0.35);
+  color: #eadcff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.access-status-card.locked {
+  border-color: #ff4d8d !important;
+  box-shadow: 0 0 25px #ff4d8d !important;
+  filter: saturate(0.3) brightness(0.6);
+}
+.asc-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.7rem;
+  color: #f3e2ff;
+}
+.asc-stats {
+  margin-bottom: 0.6rem;
+}
+.asc-line {
+  font-size: 0.95rem;
+  margin: 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.asc-icon {
+  font-size: 1.1rem;
+}
+.asc-message {
+  margin-top: 0.8rem;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  font-style: italic;
+}

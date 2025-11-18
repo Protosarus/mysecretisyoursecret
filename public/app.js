@@ -874,6 +874,8 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
       `;
     })
     .join('');
+  localStorage.setItem("read_count", (Number(localStorage.getItem("read_count")||0) + secrets.length));
+  updateAccessStatusCard();
   initTruthMeters(listEl);
 }
 
@@ -1095,6 +1097,38 @@ function initAdminPage() {
   loadSecrets();
 }
 
+function updateAccessStatusCard() {
+  const readsLeftEl = document.getElementById('asc-reads-left');
+  const whispersSharedEl = document.getElementById('asc-whispers-shared');
+  const card = document.querySelector('.access-status-card');
+
+  if (!readsLeftEl || !whispersSharedEl || !card) return;
+
+  const FREE_READ_LIMIT = 3;
+
+  // get read count
+  let readCount = 0;
+  try {
+    readCount = Number(localStorage.getItem('read_count') || 0);
+  } catch {}
+
+  const readsLeft = Math.max(0, FREE_READ_LIMIT - readCount);
+  readsLeftEl.textContent = readsLeft;
+
+  // get shared count from user profile
+  const user = mySecretApp.getUser();
+  const shared = user ? Number(user.secretCount || 0) : 0;
+  whispersSharedEl.textContent = shared;
+
+  if (readsLeft === 0 && shared === 0) {
+    card.classList.add('locked');
+    document.body.classList.add('exchange-lock');
+  } else {
+    card.classList.remove('locked');
+    document.body.classList.remove('exchange-lock');
+  }
+}
+
 function initReadPage() {
   guardLoggedIn('/login.html?next=/read.html');
 
@@ -1200,6 +1234,7 @@ function initReadPage() {
   loadCategories().then(() => {
     loadSecrets();
     syncDropYoursBtn();
+    updateAccessStatusCard();
   });
 
   function loadSecrets() {
