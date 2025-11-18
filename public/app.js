@@ -401,11 +401,24 @@ function initTruthMeter(container) {
       }
       setButtonsDisabled(true);
       setHint('Sending your vibe...');
+      const submitVote = async () => {
+        try {
+          return await fetchJSON('/api/truth-meter', {
+            method: 'POST',
+            body: { secretId, vote }
+          });
+        } catch (err) {
+          if (err && err.status && (err.status === 404 || err.status === 405)) {
+            return fetchJSON(`/api/secrets/${encodeURIComponent(secretId)}/truth-meter`, {
+              method: 'POST',
+              body: { vote }
+            });
+          }
+          throw err;
+        }
+      };
       try {
-        const payload = await fetchJSON('/api/truth-meter', {
-          method: 'POST',
-          body: { secretId, vote }
-        });
+        const payload = await submitVote();
         const stats = getTruthMeterStats(payload.truthVotes, payload.lieVotes);
         updateTruthMeterDisplay(container, stats);
         saveTruthMeterVote(secretId, vote);
