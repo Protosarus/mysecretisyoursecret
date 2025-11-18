@@ -1206,13 +1206,6 @@ function initReadPage() {
     });
   }
 
-  const refreshBtn = document.querySelector('[data-refresh]');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
-      loadSecrets();
-    });
-  }
-
   if (randomBtn && randomArea) {
     randomBtn.addEventListener('click', async () => {
       randomBtn.disabled = true;
