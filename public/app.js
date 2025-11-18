@@ -882,23 +882,26 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
   }
 
   const storedVotes = getTruthMeterVotesStore();
-        listEl.innerHTML = secrets.map((secret) => {
-          return `
-            <article class="secret-card" data-secret-id="${secret.id}">
-              <div class="secret-meta">
-                <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
-                <span>${escapeHTML(secret.category)}</span>
-              </div>
-              <div class="secret-content">${escapeHTML(secret.content)}</div>
-              ${truthMeterMarkup(secret, storedVotes)}
-            </article>
-          `;
-        }).join('');
-    localStorage.setItem("read_count", (Number(localStorage.getItem("read_count")||0) + secrets.length));
-    updateAccessStatusCard();
-    // Truth Meter voting logic
-    setTimeout(() => {
-    document.querySelectorAll('[data-truth-btn]').forEach(btn => {
+  listEl.innerHTML = secrets
+    .map((secret) => {
+      return `
+        <article class="secret-card" data-secret-id="${secret.id}">
+          <div class="secret-meta">
+            <span>${escapeHTML(secret.nickname)} ${genderIcon(secret.gender)}</span>
+            <span>${escapeHTML(secret.category)}</span>
+          </div>
+          <div class="secret-content">${escapeHTML(secret.content)}</div>
+          ${truthMeterMarkup(secret, storedVotes)}
+        </article>
+      `;
+    })
+    .join('');
+  initTruthMeters(listEl);
+  localStorage.setItem('read_count', (Number(localStorage.getItem('read_count') || 0) + secrets.length));
+  updateAccessStatusCard();
+  // Truth Meter voting logic
+  setTimeout(() => {
+    document.querySelectorAll('[data-truth-btn]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const card = btn.closest('[data-secret-id]');
         const secretId = card.dataset.secretId;
@@ -907,12 +910,12 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
         if (!currentUserId) return;
 
         // Load votes
-        let truthVotes = JSON.parse(localStorage.getItem('truthVotes') || "{}");
+        let truthVotes = JSON.parse(localStorage.getItem('truthVotes') || '{}');
 
         // Prevent duplicate voting
         if (truthVotes[secretId] && truthVotes[secretId].user === currentUserId) {
           btn.disabled = true;
-          btn.textContent = "Already rated ✔";
+          btn.textContent = 'Already rated ✔';
           return;
         }
 
@@ -937,16 +940,16 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
         const particles = card.querySelector('[data-truth-particles]');
         for (let i = 0; i < 6; i++) {
           const p = document.createElement('span');
-          p.style.left = (10 + Math.random() * 80) + "%";
+          p.style.left = `${10 + Math.random() * 80}%`;
           particles.appendChild(p);
           setTimeout(() => p.remove(), 1300);
         }
 
         btn.disabled = true;
-        btn.textContent = "Rated ✔";
+        btn.textContent = 'Rated ✔';
       });
     });
-    }, 0);
+  }, 0);
 }
 
 function renderAdminUsers(container, users, currentUserId) {
