@@ -471,7 +471,7 @@ function initTruthMeter(container) {
   }
 
   buttons.forEach((button) => {
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', async (e) => {
       if (lockedVote || button.disabled) {
         return;
       }
@@ -479,6 +479,7 @@ function initTruthMeter(container) {
       if (!vote) {
         return;
       }
+      createEmojiBlast(e.clientX, e.clientY);
       setButtonsDisabled(true);
       setHint('Sending your vibe...');
       const submitVote = async () => {
@@ -1444,6 +1445,24 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
   }
 });
+
+function createEmojiBlast(x, y) {
+  const emojis = ["💖","✨","😈","💜","💫","🌸","🔥"];
+  for (let i = 0; i < 14; i++) {
+    const emoji = document.createElement("div");
+    emoji.className = "emoji-blast";
+    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+    const offsetX = (Math.random() * 80) - 40;
+    const offsetY = (Math.random() * 20) - 10;
+
+    emoji.style.left = (x + offsetX) + "px";
+    emoji.style.top = (y + offsetY) + "px";
+
+    document.body.appendChild(emoji);
+    setTimeout(() => emoji.remove(), 1200);
+  }
+}
 
 window.mySecretApp = {
   setAuth,
