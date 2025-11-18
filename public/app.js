@@ -821,10 +821,7 @@ function initSharePage() {
         body: { category, content }
       });
       form.reset();
-      if (statusEl) {
-        statusEl.textContent = 'Secret shared successfully!';
-        statusEl.classList.add('form-success');
-      }
+      window.location.replace('/read.html');
     } catch (err) {
       if (statusEl) {
         statusEl.textContent = err.message || 'Secret could not be shared.';
@@ -1092,6 +1089,10 @@ function initReadPage() {
   const listEl = document.querySelector('[data-secrets-list]');
   const randomBtn = document.querySelector('[data-random-btn]');
   const randomArea = document.querySelector('[data-random-area]');
+  const legacyRefreshBtn = document.querySelector('[data-refresh]');
+  if (legacyRefreshBtn && legacyRefreshBtn.parentElement) {
+    legacyRefreshBtn.parentElement.removeChild(legacyRefreshBtn);
+  }
   let dropYoursBtn = document.querySelector('[data-drop-btn]');
 
   const buildShareTarget = (value) => {
