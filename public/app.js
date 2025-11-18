@@ -2,6 +2,7 @@ const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 const TRUTH_METER_KEY = 'truth_meter_votes';
 const INTRO_SESSION_KEY = 'intro_intro_shown';
+const READ_COUNT_STORE_KEY = 'user_read_counts';
 
 function setAuth(token, user) {
   const oldUserId = localStorage.getItem('logged_user_id');
@@ -38,6 +39,63 @@ function getUser() {
 function clearAuth() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+}
+
+function getCurrentUserId() {
+  const user = getUser();
+  return user ? user.id : null;
+}
+
+function getReadCountsStore() {
+  try {
+    const raw = localStorage.getItem(READ_COUNT_STORE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function saveReadCountsStore(store) {
+  try {
+    localStorage.setItem(READ_COUNT_STORE_KEY, JSON.stringify(store));
+  } catch (err) {
+    // ignore quota issues
+  }
+}
+
+function getReadCountForUser(userId) {
+  if (!userId) {
+    return 0;
+  }
+  const store = getReadCountsStore();
+  if (Object.prototype.hasOwnProperty.call(store, userId)) {
+    const value = Number(store[userId]) || 0;
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+  const legacyRaw = localStorage.getItem('read_count');
+  if (legacyRaw !== null) {
+    const legacyValue = Number(legacyRaw) || 0;
+    store[userId] = legacyValue;
+    saveReadCountsStore(store);
+    localStorage.removeItem('read_count');
+    return legacyValue;
+  }
+  return 0;
+}
+
+function incrementReadCountForCurrentUser(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return;
+  }
+  const userId = getCurrentUserId();
+  if (!userId) {
+    return;
+  }
+  const store = getReadCountsStore();
+  const current = Number(store[userId]) || 0;
+  const nextValue = current + amount;
+  store[userId] = nextValue;
+  saveReadCountsStore(store);
 }
 
 function getTruthMeterVotesStore() {
@@ -897,7 +955,7 @@ function renderSecrets(listEl, secrets, emptyState = null, categoryValue = '') {
     })
     .join('');
   initTruthMeters(listEl);
-  localStorage.setItem('read_count', (Number(localStorage.getItem('read_count') || 0) + secrets.length));
+  incrementReadCountForCurrentUser(secrets.length);
   updateAccessStatusCard();
   // Truth Meter voting logic
   setTimeout(() => {
@@ -1179,17 +1237,13 @@ function updateAccessStatusCard() {
 
   const FREE_READ_LIMIT = 3;
 
-  // get read count
-  let readCount = 0;
-  try {
-    readCount = Number(localStorage.getItem('read_count') || 0);
-  } catch {}
-
-  const readsLeft = Math.max(0, FREE_READ_LIMIT - readCount);
+  // get user-specific read count
+  const user = getUser();
+  const readCount = user ? getReadCountForUser(user.id) : 0;
+  const readsLeft = user ? Math.max(0, FREE_READ_LIMIT - readCount) : FREE_READ_LIMIT;
   readsLeftEl.textContent = readsLeft;
 
   // get shared count from user profile
-  const user = mySecretApp.getUser();
   const shared = user ? Number(user.secretCount || 0) : 0;
   whispersSharedEl.textContent = shared;
 
