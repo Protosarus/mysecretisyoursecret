@@ -782,10 +782,8 @@ function initRegisterPage() {
 }
 
 function initLoginPage() {
-  const redirectTarget = getNextParam('/read.html');
-
   if (getToken()) {
-    window.location.replace(redirectTarget);
+    window.location.replace('/index.html');
     return;
   }
 
@@ -818,7 +816,7 @@ function initLoginPage() {
         body: { nickname, password }
       });
       setAuth(payload.token, payload.user);
-      window.location.replace('/index.html');
+      window.location.href = '/index.html';
     } catch (err) {
       if (errorEl) {
         errorEl.textContent = err.message || 'Sign in failed.';
