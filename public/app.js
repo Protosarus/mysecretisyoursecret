@@ -271,37 +271,7 @@ function initIntroOverlay() {
   );
 }
 
-function safeRedirectPath(target, fallback = '/') {
-  if (!target) {
-    return fallback;
-  }
 
-  if (typeof target === 'string' && target.startsWith('/')) {
-    return target;
-  }
-
-  try {
-    const url = new URL(target, window.location.origin);
-    if (url.origin === window.location.origin) {
-      const composed = `${url.pathname}${url.search}${url.hash}`;
-      return composed || fallback;
-    }
-  } catch (err) {
-    // ignore parsing issues and fall back
-  }
-
-  return fallback;
-}
-
-function getNextParam(fallback = '/read.html') {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const nextParam = params.get('next');
-    return safeRedirectPath(nextParam, fallback);
-  } catch (err) {
-    return fallback;
-  }
-}
 
 function escapeHTML(str) {
   if (typeof str !== 'string') {
